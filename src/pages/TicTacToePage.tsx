@@ -1,3 +1,1 @@
-export const TicTacToePage = () => {
-  return <div>TicTacToePage</div>;
-};
+export const TicTacToePage = () => <div>TicTacToePage</div>;

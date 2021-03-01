@@ -1,5 +1,3 @@
-import "./App.css";
+import './App.css';
 
-export const App = () => {
-  return <div className="App"></div>;
-};
+export const App = (): JSX.Element => <div className="App" />;
