@@ -1,1 +1,1 @@
-export const TicTacToePage = () => <div>TicTacToePage</div>;
+export const TicTacToePage = (): JSX.Element => <div>TicTacToePage</div>;

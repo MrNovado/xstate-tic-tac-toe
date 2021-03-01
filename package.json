@@ -51,7 +51,7 @@
     "test": "react-scripts test",
     "qa": "yarn run qa:types && yarn run qa:lint",
     "qa:types": "tsc --noEmit",
-    "qa:lint": "eslint --ext js,ts,tsx ./src --quiet --fix"
+    "qa:lint": "eslint ./src --ext .js,.jsx,.ts,.tsx --fix"
   },
   "eslintConfig": {
     "extends": [
