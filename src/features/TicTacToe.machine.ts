@@ -27,8 +27,12 @@ type TicTacToeState = {
     | typeof S.showingGameEndResults;
 };
 
+/**
+ * This machine defines major states of the game
+ */
 export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents, TicTacToeState>({
   context: undefined,
+  initial: S.selectingOpponent,
   states: {
     [S.selectingOpponent]: {},
     [S.decidingWhosGoingFirst]: {},
