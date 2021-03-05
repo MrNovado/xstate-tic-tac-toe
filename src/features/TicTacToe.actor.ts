@@ -2,7 +2,11 @@ import { createMachine, DefaultContext } from 'xstate';
 
 type TicTacToeActorContext = DefaultContext;
 
-type TicTacToeActorEvents = { type: 'something' };
+// input
+export type TicTacToeActorEvents = { type: 'something' };
+
+// output
+export type TicTacToeActorMessages = { type: 'something' };
 
 const TicTacToeActorStateNodes = {
   awaitingTurn: '@/awaitingTurn',
