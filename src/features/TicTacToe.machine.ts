@@ -34,6 +34,9 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
     context: initialContext,
     initial: S.selectingOpponents,
     states: {
+      /**
+       * We need to select whos going to play: agents or users
+       */
       [S.selectingOpponents]: {
         on: {
           [E.CHANGE_PLAYER_REQ]: A.setPlayer,
@@ -42,6 +45,9 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           },
         },
       },
+      /**
+       * We need to decide whos going to move first
+       */
       [S.decidingWhosGoingFirst]: {
         on: {
           [E.CHANGE_TURN_ORDER_REQ]: A.setTurnOrder,
@@ -50,8 +56,15 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           },
         },
       },
+      /**
+       * While playing we will:
+       */
       [S.playing]: {
         states: {
+          /**
+           * - wait for their turn
+           * - accept or force to turn again
+           */
           [S.playingTakingTurn]: {
             entry: A.giveTurn,
             on: {
@@ -67,6 +80,10 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
               ],
             },
           },
+          /**
+           * - decide if the game has ended
+           * - or ask other player to move
+           */
           [S.playingCheckingGameState]: {
             on: {
               '': [
@@ -82,15 +99,11 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           },
         },
       },
+      /**
+       * We need to show the results
+       * - we should ask if players want to retry
+       */
       [S.showingGameEndResults]: {
-        on: {
-          [E.RETRY_REQ]: {
-            target: S.selectingOpponents,
-            actions: [A.revertContextToInitial],
-          },
-        },
-      },
-      [S.somethingWentWrong]: {
         on: {
           [E.RETRY_REQ]: {
             target: S.selectingOpponents,

@@ -73,7 +73,6 @@ export const TicTacToeStateNodes = {
   playingTakingTurn: '@/playing/takingTurn',
   playingCheckingGameState: '@/playing/checkingGameState',
   showingGameEndResults: '@/showingGameEndResults',
-  somethingWentWrong: '@/somethingWentWrong',
 } as const;
 
 export type TicTacToeState = {
