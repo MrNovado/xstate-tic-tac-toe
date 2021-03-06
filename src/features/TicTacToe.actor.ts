@@ -1,12 +1,17 @@
-import { createMachine, DefaultContext } from 'xstate';
+import { createMachine, StateMachine } from 'xstate';
 
-export type TicTacToeActorContext = DefaultContext;
+import { PlayerFieldSymbol } from './TicTacToe.machine.types';
+
+export type TicTacToeActorContext = {
+  symbol: PlayerFieldSymbol;
+};
+
+export const TicTacToeActorEventTypes = {
+  MAKE_TURN_REQ: 'MAKE_TURN_REQ',
+} as const;
 
 // input
-export type TicTacToeActorEvents = { type: 'something' };
-
-// output
-export type TicTacToeActorMessages = { type: 'something' };
+export type TicTacToeActorEvents = { type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ };
 
 const TicTacToeActorStateNodes = {
   awaitingTurn: '@/awaitingTurn',
@@ -47,19 +52,24 @@ export type TicTacToeActorState = {
  * - https://en.wikipedia.org/wiki/Tic-tac-toe#Strategy
  * - https://doi.org/10.1016%2F0364-0213%2893%2990003-Q
  */
-export const TicTacToeActor = createMachine<TicTacToeActorContext, TicTacToeActorEvents, TicTacToeActorState>({
-  context: undefined,
-  initial: S.awaitingTurn,
-  states: {
-    [S.awaitingTurn]: {},
-    [S.tryingToWin]: {},
-    [S.tryingToBlockWin]: {},
-    [S.tryingToFork]: {},
-    [S.tryingToBlockFork]: {},
-    [S.tryingToTakeCenter]: {},
-    [S.tryingToTakeOppositeCornter]: {},
-    [S.tryingToTakeCorner]: {},
-    [S.tryingToTakeEmptySide]: {},
-    [S.givingUp]: {},
-  },
-});
+export const createTicTacToeActor = (
+  symbol: PlayerFieldSymbol,
+): StateMachine<TicTacToeActorContext, Record<string, unknown>, TicTacToeActorEvents, TicTacToeActorState> =>
+  createMachine<TicTacToeActorContext, TicTacToeActorEvents, TicTacToeActorState>({
+    context: {
+      symbol,
+    },
+    initial: S.awaitingTurn,
+    states: {
+      [S.awaitingTurn]: {},
+      [S.tryingToWin]: {},
+      [S.tryingToBlockWin]: {},
+      [S.tryingToFork]: {},
+      [S.tryingToBlockFork]: {},
+      [S.tryingToTakeCenter]: {},
+      [S.tryingToTakeOppositeCornter]: {},
+      [S.tryingToTakeCorner]: {},
+      [S.tryingToTakeEmptySide]: {},
+      [S.givingUp]: {},
+    },
+  });

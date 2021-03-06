@@ -1,24 +1,23 @@
-import { SpawnedActorRef, State } from 'xstate';
+import { SpawnedActorRef } from 'xstate';
 
-import { TicTacToeActorEvents, TicTacToeActorContext, TicTacToeActorState } from './TicTacToe.actor';
+import { TicTacToeActorEvents } from './TicTacToe.actor';
 
-type PlayerContext =
+export type PlayerContext =
   | { type: 'user' }
   | {
       type: 'agent';
-      ref: SpawnedActorRef<
-        TicTacToeActorEvents,
-        State<TicTacToeActorContext, TicTacToeActorEvents, Record<string, unknown>, TicTacToeActorState>
-      >;
+      ref: SpawnedActorRef<TicTacToeActorEvents>;
     };
 
 type PlayerTurnContext = 'player1' | 'player2';
 
-type FieldCellValue = 'x' | '0' | null;
+export type PlayerFieldSymbol = 'x' | '0';
+
+type FieldCellValue = PlayerFieldSymbol | null;
 type FieldCellIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 // strictly 9 cells
-type FieldContext = [
+export type FieldContext = [
   FieldCellValue,
   FieldCellValue,
   FieldCellValue,
@@ -89,8 +88,9 @@ export type TicTacToeState = {
 export const TicTacToeMachineActions = {
   setPlayer: 'setPlayer',
   setTurnOrder: 'setTurnOrder',
-  giveTurn: 'giveTurn',
+  awaitTurn: 'awaitTurn',
   saveTurn: 'saveTurn',
+  switchTurn: 'switchTurn',
   revertContextToInitial: 'revertContextToInitial',
 } as const;
 
