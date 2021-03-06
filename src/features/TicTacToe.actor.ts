@@ -1,6 +1,6 @@
 import { createMachine, DefaultContext } from 'xstate';
 
-type TicTacToeActorContext = DefaultContext;
+export type TicTacToeActorContext = DefaultContext;
 
 // input
 export type TicTacToeActorEvents = { type: 'something' };
@@ -24,7 +24,7 @@ const TicTacToeActorStateNodes = {
 // short-hand helper
 const S = TicTacToeActorStateNodes;
 
-type TicTacToeActorState = {
+export type TicTacToeActorState = {
   context: TicTacToeActorContext;
   value:
     | typeof S.awaitingTurn

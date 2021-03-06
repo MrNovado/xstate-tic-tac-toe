@@ -1,8 +1,17 @@
-import { ActorRef } from 'xstate';
+import { SpawnedActorRef, State } from 'xstate';
 
-import { TicTacToeActorEvents, TicTacToeActorMessages } from './TicTacToe.actor';
+import { TicTacToeActorEvents, TicTacToeActorContext, TicTacToeActorState } from './TicTacToe.actor';
 
-type PlayerContext = { type: 'user' } | { type: 'agent'; ref: ActorRef<TicTacToeActorEvents, TicTacToeActorMessages> };
+type PlayerContext =
+  | { type: 'user' }
+  | {
+      type: 'agent';
+      ref: SpawnedActorRef<
+        TicTacToeActorEvents,
+        State<TicTacToeActorContext, TicTacToeActorEvents, Record<string, unknown>, TicTacToeActorState>
+      >;
+    };
+
 type PlayerTurnContext = 'player1' | 'player2';
 
 type FieldCellValue = 'x' | '0' | null;
@@ -43,27 +52,19 @@ export type TicTacToeContext = {
 };
 
 export const TicTacToeEventTypes = {
-  SELECT_PLAYER_1: 'SELECT_PLAYER_1',
-  SELECT_PLAYER_2: 'SELECT_PLAYER_2',
-
-  NEXT: 'NEXT',
-
-  SET_TURN_PLAYER_1: 'SET_TURN_PLAYER_1',
-  SET_TURN_PLAYER_2: 'SET_TURN_PLAYER_2',
-
-  MAKE_TURN: 'MAKE_TURN',
-
-  RETRY: 'RETRY',
+  CHANGE_PLAYER_REQ: 'CHANGE_PLAYER_REQ',
+  CONTINUE_REQ: 'CONTINUE_REQ',
+  CHANGE_TURN_ORDER_REQ: 'CHANGE_TURN_ORDER_REQ',
+  ACCEPT_TURN_REQ: 'ACCEPT_TURN_REQ',
+  RETRY_REQ: 'RETRY_REQ',
 } as const;
 
 export type TicTacToeEvents =
-  | { type: typeof TicTacToeEventTypes.SELECT_PLAYER_1 }
-  | { type: typeof TicTacToeEventTypes.SELECT_PLAYER_2 }
-  | { type: typeof TicTacToeEventTypes.NEXT }
-  | { type: typeof TicTacToeEventTypes.SET_TURN_PLAYER_1 }
-  | { type: typeof TicTacToeEventTypes.SET_TURN_PLAYER_2 }
-  | { type: typeof TicTacToeEventTypes.MAKE_TURN; index: FieldCellIndex }
-  | { type: typeof TicTacToeEventTypes.RETRY };
+  | { type: typeof TicTacToeEventTypes.CHANGE_PLAYER_REQ; kind: PlayerTurnContext; value: PlayerContext['type'] }
+  | { type: typeof TicTacToeEventTypes.CONTINUE_REQ }
+  | { type: typeof TicTacToeEventTypes.CHANGE_TURN_ORDER_REQ; first: PlayerTurnContext }
+  | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex }
+  | { type: typeof TicTacToeEventTypes.RETRY_REQ };
 
 export const TicTacToeStateNodes = {
   selectingOpponents: '@/selectingOpponents',
@@ -87,14 +88,11 @@ export type TicTacToeState = {
 };
 
 export const TicTacToeMachineActions = {
-  setPlayer1: 'setPlayer1',
-  setPlayer2: 'setPlayer2',
-  createPlayers: 'createPlayers',
-  setTurnPlayer1: 'setTurnPlayer1',
-  setTurnPlayer2: 'setTurnPlayer2',
+  setPlayer: 'setPlayer',
+  setTurnOrder: 'setTurnOrder',
   giveTurn: 'giveTurn',
   saveTurn: 'saveTurn',
-  initContext: 'initContext',
+  revertContextToInitial: 'revertContextToInitial',
 } as const;
 
 export const TicTacToeMachineConditions = {
