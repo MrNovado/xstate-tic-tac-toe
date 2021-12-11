@@ -108,6 +108,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [S.showingGameEndResults]: {
         id: S.showingGameEndResults,
+        entry: A.saveGameResults,
         on: {
           [E.RETRY_REQ]: {
             target: S.settingUp,
@@ -235,6 +236,24 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
       [A.saveSurrender]: assign({
         surrendered: (ctx) => {
           return ctx.turnOrder.current;
+        },
+      }),
+
+      [A.saveGameResults]: assign({
+        winCombo: ({ field, winCombo }) => {
+          const someCombo = FIELD.COMBINATIONS.find((combination) => {
+            const [a, b, c] = combination;
+            if (field[a] && field[a] === field[b] && field[a] === field[c]) {
+              return true;
+            }
+            return false;
+          });
+
+          const hasFreeSpace = field.some((cellValue) => cellValue === null);
+          if (someCombo || !hasFreeSpace) {
+            return someCombo as TicTacToeContext['winCombo'];
+          }
+          return winCombo;
         },
       }),
 
