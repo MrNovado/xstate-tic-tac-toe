@@ -1,20 +1,24 @@
 import { createMachine, assign, spawn } from 'xstate';
 
 import { createTicTacToeActor } from './TicTacToe.actor';
-import { TicTacToeActorEventTypes as Msg, PLAYER_TYPE, PlayerContext } from './TicTacToe.common';
+import {
+  TicTacToeActorEventTypes as Msg,
+  PLAYER_TYPE,
+  PlayerContext,
+  FieldContext,
+  FIELD_INITIAL,
+  PLAYER_SYMBOL,
+  TicTacToeEvents,
+  TicTacToeEventTypes as E,
+  PLAYER_NUM,
+  TicTacToeContext,
+} from './TicTacToe.common';
 
 import {
-  FieldContext,
-  TicTacToeContext,
-  TicTacToeEvents,
   TicTacToeState,
-  TicTacToeEventTypes as E,
   TicTacToeStateNodes as S,
   TicTacToeMachineActions as A,
   TicTacToeMachineConditions as C,
-  PLAYER_NUM,
-  PLAYER_SYMBOL,
-  FIELD_INITIAL,
 } from './TicTacToe.machine.types';
 
 const initialContext: TicTacToeContext = {
@@ -82,6 +86,10 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
                   target: S.playingCheckingGameState,
                 },
               ],
+              // TODO:
+              [E.GIVE_UP_TURN_REQ]: {
+                target: S.showingGameEndResults,
+              },
             },
           },
           /**
@@ -187,8 +195,8 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         const player = ctx.opponents[ctx.turnOrder.current];
         if (player.type === PLAYER_TYPE.agent) {
           player.ref.send({
-            // TODO: pass field state
             type: Msg.MAKE_TURN_REQ,
+            field: ctx.field,
           });
         } else {
           // just waiting for a user to make their move

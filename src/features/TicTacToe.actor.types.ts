@@ -1,7 +1,7 @@
-import { FieldCellIndex, PlayerFieldSymbol, TicTacToeContext } from './TicTacToe.machine.types';
+import { PlayerFieldSymbol, FieldCellIndex, TicTacToeContext } from './TicTacToe.common';
 
 export type TicTacToeActorContext = {
-  filed: TicTacToeContext['field'];
+  field: TicTacToeContext['field'];
   symbol: PlayerFieldSymbol;
   moveReady: { type: 'commit'; turnTo: FieldCellIndex } | { type: 'tryOtherMove' } | null;
 };
