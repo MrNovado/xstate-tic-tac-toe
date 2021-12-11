@@ -1,48 +1,15 @@
 import { createMachine, StateMachine } from 'xstate';
 
-import { PlayerFieldSymbol } from './TicTacToe.machine.types';
-
-export type TicTacToeActorContext = {
-  symbol: PlayerFieldSymbol;
-};
-
-export const TicTacToeActorEventTypes = {
-  MAKE_TURN_REQ: 'MAKE_TURN_REQ',
-} as const;
-
-// input
-export type TicTacToeActorEvents = { type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ };
-
-const TicTacToeActorStateNodes = {
-  awaitingTurn: '@/awaitingTurn',
-  tryingToWin: '@/tryingToWin',
-  tryingToBlockWin: '@/tryingToBlockWin',
-  tryingToFork: '@/tryingToFork',
-  tryingToBlockFork: '@/tryingToBlockFork',
-  tryingToTakeCenter: '@/tryingToTakeCenter',
-  tryingToTakeOppositeCorner: '@/tryingToTakeOppositeCorner',
-  tryingToTakeCorner: '@/tryingToTakeCorner',
-  tryingToTakeEmptySide: '@/tryingToTakeEmptySide',
-  givingUp: '@/givingUp',
-} as const;
-
-// short-hand helper
-const S = TicTacToeActorStateNodes;
-
-export type TicTacToeActorState = {
-  context: TicTacToeActorContext;
-  value:
-    | typeof S.awaitingTurn
-    | typeof S.tryingToWin
-    | typeof S.tryingToBlockWin
-    | typeof S.tryingToFork
-    | typeof S.tryingToBlockFork
-    | typeof S.tryingToTakeCenter
-    | typeof S.tryingToTakeOppositeCorner
-    | typeof S.tryingToTakeCorner
-    | typeof S.tryingToTakeEmptySide
-    | typeof S.givingUp;
-};
+import { FIELD_INITIAL, PlayerFieldSymbol } from './TicTacToe.machine.types';
+import { TicTacToeActorEvents, TicTacToeActorEventTypes as E } from './TicTacToe.common';
+import {
+  MAKING_TURN_ACTION,
+  TicTacToeActorContext,
+  TicTacToeActorState,
+  TicTacToeActorActions as A,
+  TicTacToeActorConditions as C,
+  TicTacToeActorStateNodes as S,
+} from './TicTacToe.actor.types';
 
 /**
  * This machine defines actor' states using
@@ -55,21 +22,138 @@ export type TicTacToeActorState = {
 export const createTicTacToeActor = (
   symbol: PlayerFieldSymbol,
 ): StateMachine<TicTacToeActorContext, Record<string, unknown>, TicTacToeActorEvents, TicTacToeActorState> =>
-  createMachine<TicTacToeActorContext, TicTacToeActorEvents, TicTacToeActorState>({
-    context: {
-      symbol,
+  createMachine<TicTacToeActorContext, TicTacToeActorEvents, TicTacToeActorState>(
+    {
+      context: {
+        filed: FIELD_INITIAL,
+        symbol,
+        moveReady: null,
+      },
+      initial: S.awaitingTurn,
+      states: {
+        [S.awaitingTurn]: {
+          on: {
+            [E.MAKE_TURN_REQ]: {
+              target: S.tryingToWin,
+              actions: [A.saveField],
+            },
+          },
+        },
+
+        [S.makingTurn]: {
+          on: {
+            '': {
+              target: S.awaitingTurn,
+              actions: A.makeTurn,
+            },
+          },
+        },
+
+        [S.tryingToWin]: {
+          entry: A.assesWinning,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToBlockWin,
+              },
+            ],
+          },
+        },
+        [S.tryingToBlockWin]: {
+          entry: A.assesBlockingWin,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToFork,
+              },
+            ],
+          },
+        },
+        [S.tryingToFork]: {
+          entry: A.assesForking,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToBlockFork,
+              },
+            ],
+          },
+        },
+        [S.tryingToBlockFork]: {
+          entry: A.assesBlockingFork,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToTakeCenter,
+              },
+            ],
+          },
+        },
+        [S.tryingToTakeCenter]: {
+          entry: A.assesTakingCenter,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToTakeOppositeCorner,
+              },
+            ],
+          },
+        },
+        [S.tryingToTakeOppositeCorner]: {
+          entry: A.assesTakingOppositeCorner,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToTakeCorner,
+              },
+            ],
+          },
+        },
+        [S.tryingToTakeCorner]: {
+          entry: A.assesTakingCorner,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.tryingToTakeEmptySide,
+              },
+            ],
+          },
+        },
+        [S.tryingToTakeEmptySide]: {
+          entry: A.assesTakingEmptySide,
+          on: {
+            '': [
+              MAKING_TURN_ACTION,
+              {
+                target: S.givingUp,
+              },
+            ],
+          },
+        },
+
+        [S.givingUp]: {
+          on: {
+            '': {
+              target: S.awaitingTurn,
+              actions: A.giveUp,
+            },
+          },
+        },
+      },
     },
-    initial: S.awaitingTurn,
-    states: {
-      [S.awaitingTurn]: {},
-      [S.tryingToWin]: {},
-      [S.tryingToBlockWin]: {},
-      [S.tryingToFork]: {},
-      [S.tryingToBlockFork]: {},
-      [S.tryingToTakeCenter]: {},
-      [S.tryingToTakeOppositeCorner]: {},
-      [S.tryingToTakeCorner]: {},
-      [S.tryingToTakeEmptySide]: {},
-      [S.givingUp]: {},
+    {
+      // TODO:
+      guards: {
+        [C.verifyTurnReady]: ({ moveReady }: TicTacToeActorContext) => moveReady?.type === 'commit',
+      },
+      // TODO:
+      actions: {},
     },
-  });
+  );

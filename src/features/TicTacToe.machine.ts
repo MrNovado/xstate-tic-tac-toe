@@ -1,9 +1,9 @@
 import { createMachine, assign, spawn } from 'xstate';
 
-import { createTicTacToeActor, TicTacToeActorEventTypes as Msg } from './TicTacToe.actor';
+import { createTicTacToeActor } from './TicTacToe.actor';
+import { TicTacToeActorEventTypes as Msg, PLAYER_TYPE, PlayerContext } from './TicTacToe.common';
 
 import {
-  PlayerContext,
   FieldContext,
   TicTacToeContext,
   TicTacToeEvents,
@@ -13,8 +13,8 @@ import {
   TicTacToeMachineActions as A,
   TicTacToeMachineConditions as C,
   PLAYER_NUM,
-  PLAYER_TYPE,
   PLAYER_SYMBOL,
+  FIELD_INITIAL,
 } from './TicTacToe.machine.types';
 
 const initialContext: TicTacToeContext = {
@@ -26,7 +26,7 @@ const initialContext: TicTacToeContext = {
     current: PLAYER_NUM.player1,
     turnsMade: 0,
   },
-  field: [null, null, null, null, null, null, null, null, null],
+  field: FIELD_INITIAL,
   winCombo: null,
 };
 
@@ -118,6 +118,12 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
     },
   },
   {
+    guards: {
+      // TODO:
+      [C.verifyTurn]: () => false,
+      // TODO:
+      [C.verifyGameEnd]: () => false,
+    },
     actions: {
       /**
        * Reverting context to initial
