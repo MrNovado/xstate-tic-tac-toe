@@ -307,7 +307,7 @@ export const createTicTacToeActor = (
 function assesWinning(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
   const combination = find2InARowWith1Free(field, symbol);
   const turnTo = combination?.find((index) => field[index] === null);
-  if (turnTo) {
+  if (turnTo !== undefined) {
     return { type: 'commit', turnTo };
   }
 
@@ -333,7 +333,7 @@ function getOpponent(symbol: PlayerFieldSymbol) {
 
 function find2InARowWith1Free(field: FieldContext, symbol: PlayerFieldSymbol) {
   const opponent = getOpponent(symbol);
-  return FIELD.COMBINATIONS.find((row) => {
+  const twoInARow = FIELD.COMBINATIONS.find((row) => {
     const actorSymbolsInARow = row.reduce<number>((acc, index) => {
       if (field[index] === symbol) {
         return acc + 1;
@@ -348,6 +348,8 @@ function find2InARowWith1Free(field: FieldContext, symbol: PlayerFieldSymbol) {
 
     return actorSymbolsInARow === 2;
   });
+
+  return twoInARow;
 }
 
 function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { intersectionIndex: FieldCellIndex } | null {
