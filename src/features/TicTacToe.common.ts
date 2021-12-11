@@ -116,6 +116,7 @@ export type TicTacToeContext = {
   // because uniqueness is decided at runtime,
   // but we can signal our intent
   winCombo: Set<[FieldCellIndex, FieldCellIndex, FieldCellIndex]> | null;
+  surrendered: PlayerTurnContext | null;
 };
 
 export const TicTacToeActorEventTypes = {

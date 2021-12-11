@@ -53,8 +53,3 @@ export const TicTacToeActorActions = {
   assesTakingSide: 'assesTakingSide',
   giveUp: 'giveUp',
 } as const;
-
-export const MAKING_TURN_ACTION = {
-  target: TicTacToeActorStateNodes.makingTurn,
-  cond: TicTacToeActorConditions.verifyTurnReady,
-} as const;

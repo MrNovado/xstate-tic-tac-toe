@@ -1,8 +1,7 @@
 import { TicTacToeContext } from './TicTacToe.common';
 
 export const TicTacToeStateNodes = {
-  selectingOpponents: '@/selectingOpponents',
-  decidingWhosGoingFirst: '@/decidingWhosGoingFirst',
+  settingUp: '@/settingUp',
   playing: '@/playing',
   playingTakingTurn: '@/playing/takingTurn',
   playingCheckingGameState: '@/playing/checkingGameState',
@@ -12,8 +11,7 @@ export const TicTacToeStateNodes = {
 export type TicTacToeState = {
   context: TicTacToeContext;
   value:
-    | typeof TicTacToeStateNodes.selectingOpponents
-    | typeof TicTacToeStateNodes.decidingWhosGoingFirst
+    | typeof TicTacToeStateNodes.settingUp
     | typeof TicTacToeStateNodes.playing
     | { playing: typeof TicTacToeStateNodes.playingTakingTurn }
     | { playing: typeof TicTacToeStateNodes.playingCheckingGameState }
@@ -25,6 +23,7 @@ export const TicTacToeMachineActions = {
   setTurnOrder: 'setTurnOrder',
   awaitTurn: 'awaitTurn',
   saveTurn: 'saveTurn',
+  saveSurrender: 'saveSurrender',
   switchTurn: 'switchTurn',
   revertContextToInitial: 'revertContextToInitial',
 } as const;

@@ -17,13 +17,17 @@ import {
   FieldCellIndex,
 } from './TicTacToe.common';
 import {
-  MAKING_TURN_ACTION,
   TicTacToeActorContext,
   TicTacToeActorState,
   TicTacToeActorActions as A,
   TicTacToeActorConditions as C,
   TicTacToeActorStateNodes as S,
 } from './TicTacToe.actor.types';
+
+const MAKING_TURN_ACTION = {
+  target: S.makingTurn,
+  cond: C.verifyTurnReady,
+} as const;
 
 /**
  * This machine defines actor' states using
@@ -167,7 +171,14 @@ export const createTicTacToeActor = (
         [C.verifyTurnReady]: ({ moveReady }: TicTacToeActorContext) => moveReady?.type === 'commit',
       },
       actions: {
-        [A.saveField]: assign({ field: (_, event) => event.field }),
+        /**
+         * CHILD-PARENT Msg ===================================================
+         */
+
+        [A.saveField]: assign({
+          field: (_, event) => event.field,
+        }),
+
         [A.makeTurn]: sendParent(
           ({
             moveReady,
@@ -182,6 +193,14 @@ export const createTicTacToeActor = (
             return { type: Msg.GIVE_UP_TURN_REQ };
           },
         ),
+
+        [A.giveUp]: sendParent((): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
+          return { type: Msg.GIVE_UP_TURN_REQ };
+        }),
+
+        /**
+         * ACTOR BUSINESS =====================================================
+         */
 
         [A.assesWinning]: assign({
           moveReady: ({ field, symbol }) => {
@@ -282,10 +301,6 @@ export const createTicTacToeActor = (
 
             return { type: 'tryOtherMove' };
           },
-        }),
-
-        [A.giveUp]: sendParent((): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
-          return { type: Msg.GIVE_UP_TURN_REQ };
         }),
       },
     },

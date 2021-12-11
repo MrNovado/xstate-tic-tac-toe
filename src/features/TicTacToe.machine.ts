@@ -12,6 +12,7 @@ import {
   TicTacToeEventTypes as E,
   PLAYER_NUM,
   TicTacToeContext,
+  FIELD,
 } from './TicTacToe.common';
 
 import {
@@ -32,6 +33,7 @@ const initialContext: TicTacToeContext = {
   },
   field: FIELD_INITIAL,
   winCombo: null,
+  surrendered: null,
 };
 
 /**
@@ -40,24 +42,14 @@ const initialContext: TicTacToeContext = {
 export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents, TicTacToeState>(
   {
     context: initialContext,
-    initial: S.selectingOpponents,
+    initial: S.settingUp,
     states: {
       /**
-       * We need to select whos going to play: agents or users
+       * We need to setup the game: set players; decide turn-order
        */
-      [S.selectingOpponents]: {
+      [S.settingUp]: {
         on: {
           [E.CHANGE_PLAYER_REQ]: A.setPlayer,
-          [E.CONTINUE_REQ]: {
-            target: S.decidingWhosGoingFirst,
-          },
-        },
-      },
-      /**
-       * We need to decide whos going to move first
-       */
-      [S.decidingWhosGoingFirst]: {
-        on: {
           [E.CHANGE_TURN_ORDER_REQ]: A.setTurnOrder,
           [E.CONTINUE_REQ]: {
             target: S.playing,
@@ -86,9 +78,9 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
                   target: S.playingCheckingGameState,
                 },
               ],
-              // TODO:
               [E.GIVE_UP_TURN_REQ]: {
                 target: S.showingGameEndResults,
+                actions: [A.saveSurrender],
               },
             },
           },
@@ -118,7 +110,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
       [S.showingGameEndResults]: {
         on: {
           [E.RETRY_REQ]: {
-            target: S.selectingOpponents,
+            target: S.settingUp,
             actions: [A.revertContextToInitial],
           },
         },
@@ -127,10 +119,27 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
   },
   {
     guards: {
-      // TODO:
-      [C.verifyTurn]: () => false,
-      // TODO:
-      [C.verifyGameEnd]: () => false,
+      [C.verifyTurn]: ({ field }, event) => {
+        if (event.type === E.ACCEPT_TURN_REQ) {
+          return field[event.index] === null;
+        }
+        return false;
+      },
+      [C.verifyGameEnd]: ({ field }) => {
+        const someCombo = FIELD.COMBINATIONS.find((combination) => {
+          const [a, b, c] = combination;
+          if (field[a] && field[a] === field[b] && field[a] === field[c]) {
+            return true;
+          }
+          return false;
+        });
+
+        const hasFreeSpace = field.some((cellValue) => cellValue === null);
+        if (someCombo || !hasFreeSpace) {
+          return true;
+        }
+        return false;
+      },
     },
     actions: {
       /**
@@ -216,6 +225,15 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           }
 
           return ctx.field;
+        },
+      }),
+
+      /**
+       * Saving surrender signal when player throws a game
+       */
+      [A.saveSurrender]: assign({
+        surrendered: (ctx) => {
+          return ctx.turnOrder.current;
         },
       }),
 
