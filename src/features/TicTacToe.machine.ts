@@ -161,15 +161,18 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
             }
 
             // spawn a new one if needed
-            const newPlayerSymbol = ctx.opponents[ctx.turnOrder.current].symbol;
-            const newPlayerInfo: PlayerContext =
+            const newPlayerSymbol = event.kind === PLAYER_NUM.player1 ? PLAYER_SYMBOL.x : PLAYER_SYMBOL.o;
+            // TODO: simplify and incap this logic
+            const newPlayerInfo: TicTacToeContext['opponents']['player1'] | TicTacToeContext['opponents']['player2'] =
               event.value === PLAYER_TYPE.user
                 ? {
                     type: PLAYER_TYPE.user,
+                    symbol: newPlayerSymbol,
                   }
                 : {
                     type: PLAYER_TYPE.agent,
                     ref: spawn(createTicTacToeActor(newPlayerSymbol), { name: event.kind }),
+                    symbol: newPlayerSymbol,
                   };
 
             return {
@@ -221,8 +224,8 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         field: (ctx, event) => {
           if (event.type === E.ACCEPT_TURN_REQ) {
             const newField: FieldContext = [...ctx.field];
-            const { symbol } = ctx.opponents[ctx.turnOrder.current];
-            newField[event.index] = symbol;
+            const newSymbol = ctx.opponents[event.sender].symbol;
+            newField[event.index] = newSymbol;
             return newField;
           }
 

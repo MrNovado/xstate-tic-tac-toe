@@ -1,5 +1,6 @@
 import { useMachine } from '@xstate/react';
-import { FieldCellIndex, PLAYER_TYPE, TicTacToeEventTypes } from '../features/TicTacToe.common';
+import { useEffect } from 'react';
+import { FieldCellIndex, PLAYER_NUM, PLAYER_TYPE, TicTacToeEventTypes } from '../features/TicTacToe.common';
 import { TicTacToeMachine } from '../features/TicTacToe.machine';
 import { TicTacToeStateNodes as S } from '../features/TicTacToe.machine.types';
 
@@ -12,9 +13,48 @@ export const TicTacToePage: React.FC = () => {
     switch (true) {
       case machineState.matches(S.settingUp): {
         return (
-          <button type="button" onClick={() => send({ type: TicTacToeEventTypes.CONTINUE_REQ })}>
-            Start
-          </button>
+          <div style={{ display: 'grid', gap: 8 }}>
+            <button
+              style={{ minWidth: 150, height: 50 }}
+              type="button"
+              onClick={() => send({ type: TicTacToeEventTypes.CONTINUE_REQ })}
+            >
+              Player vs player
+            </button>
+            <button
+              style={{ minWidth: 150, height: 50 }}
+              type="button"
+              onClick={() => {
+                send({
+                  type: TicTacToeEventTypes.CHANGE_PLAYER_REQ,
+                  kind: PLAYER_NUM.player2,
+                  value: PLAYER_TYPE.agent,
+                });
+                send({ type: TicTacToeEventTypes.CONTINUE_REQ });
+              }}
+            >
+              Player vs AI
+            </button>
+            <button
+              style={{ minWidth: 150, height: 50 }}
+              type="button"
+              onClick={() => {
+                send({
+                  type: TicTacToeEventTypes.CHANGE_PLAYER_REQ,
+                  kind: PLAYER_NUM.player1,
+                  value: PLAYER_TYPE.agent,
+                });
+                send({
+                  type: TicTacToeEventTypes.CHANGE_PLAYER_REQ,
+                  kind: PLAYER_NUM.player2,
+                  value: PLAYER_TYPE.agent,
+                });
+                send({ type: TicTacToeEventTypes.CONTINUE_REQ });
+              }}
+            >
+              AI vs AI
+            </button>
+          </div>
         );
       }
 
@@ -23,12 +63,13 @@ export const TicTacToePage: React.FC = () => {
         const { symbol: currentPlayerSymbol } = machineState.context.opponents[currentPlayer];
         const isPlayersTurn = machineState.context.opponents[currentPlayer].type === PLAYER_TYPE.user;
         const makeTurn = isPlayersTurn
-          ? (index: FieldCellIndex) => () =>
+          ? (index: FieldCellIndex) => () => {
               send({
                 type: TicTacToeEventTypes.ACCEPT_TURN_REQ,
                 index,
-                sender: machineState.context.turnOrder.current,
-              })
+                sender: currentPlayer,
+              });
+            }
           : () => noop;
 
         return (
@@ -115,6 +156,16 @@ export const TicTacToePage: React.FC = () => {
         return <div>UNKNOWN STATE</div>;
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log({
+      turn: machineState.context.turnOrder.turnsMade,
+      context: machineState.context,
+      events: machineState.events,
+      value: machineState.value,
+    });
+  });
 
   return (
     <div

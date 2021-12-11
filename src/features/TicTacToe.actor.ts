@@ -30,6 +30,8 @@ const MAKING_TURN_ACTION = {
   cond: C.verifyTurnReady,
 } as const;
 
+const MSG_DELAY = 300;
+
 /**
  * This machine defines actor' states using
  * Newell and Simon's expert model with rule ordering:
@@ -180,11 +182,15 @@ export const createTicTacToeActor = (
 
             return { type: Msg.GIVE_UP_TURN_REQ };
           },
+          { delay: MSG_DELAY },
         ),
 
-        [A.giveUp]: sendParent((): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
-          return { type: Msg.GIVE_UP_TURN_REQ };
-        }),
+        [A.giveUp]: sendParent(
+          (): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
+            return { type: Msg.GIVE_UP_TURN_REQ };
+          },
+          { delay: MSG_DELAY },
+        ),
 
         /**
          * ACTOR BUSINESS =====================================================
