@@ -1,17 +1,32 @@
-import { SpawnedActorRef } from 'xstate';
+import { ActorRef } from 'xstate';
 
 import { TicTacToeActorEvents } from './TicTacToe.actor';
 
+export const PLAYER_TYPE = {
+  user: 'user',
+  agent: 'agent',
+} as const;
+
 export type PlayerContext =
-  | { type: 'user' }
+  | { type: typeof PLAYER_TYPE.user }
   | {
-      type: 'agent';
-      ref: SpawnedActorRef<TicTacToeActorEvents>;
+      type: typeof PLAYER_TYPE.agent;
+      ref: ActorRef<TicTacToeActorEvents>;
     };
 
-type PlayerTurnContext = 'player1' | 'player2';
+export const PLAYER_NUM = {
+  player1: 'player1',
+  player2: 'player2',
+} as const;
 
-export type PlayerFieldSymbol = 'x' | '0';
+type PlayerTurnContext = typeof PLAYER_NUM[keyof typeof PLAYER_NUM];
+
+export const PLAYER_SYMBOL = {
+  x: 'x',
+  o: '0',
+} as const;
+
+export type PlayerFieldSymbol = typeof PLAYER_SYMBOL[keyof typeof PLAYER_SYMBOL];
 
 type FieldCellValue = PlayerFieldSymbol | null;
 type FieldCellIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
@@ -31,12 +46,11 @@ export type FieldContext = [
 
 export type TicTacToeContext = {
   opponents: {
-    player1: PlayerContext;
-    player2: PlayerContext;
+    [PLAYER_NUM.player1]: PlayerContext & { symbol: Extract<PlayerFieldSymbol, typeof PLAYER_SYMBOL.x> };
+    [PLAYER_NUM.player2]: PlayerContext & { symbol: Extract<PlayerFieldSymbol, typeof PLAYER_SYMBOL.o> };
   };
 
   turnOrder: {
-    X: PlayerTurnContext;
     current: PlayerTurnContext;
     turnsMade: number;
   };

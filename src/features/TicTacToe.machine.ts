@@ -12,16 +12,18 @@ import {
   TicTacToeStateNodes as S,
   TicTacToeMachineActions as A,
   TicTacToeMachineConditions as C,
+  PLAYER_NUM,
+  PLAYER_TYPE,
+  PLAYER_SYMBOL,
 } from './TicTacToe.machine.types';
 
 const initialContext: TicTacToeContext = {
   opponents: {
-    player1: { type: 'user' },
-    player2: { type: 'user' },
+    [PLAYER_NUM.player1]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.x },
+    [PLAYER_NUM.player2]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.o },
   },
   turnOrder: {
-    X: 'player1',
-    current: 'player1',
+    current: PLAYER_NUM.player1,
     turnsMade: 0,
   },
   field: [null, null, null, null, null, null, null, null, null],
@@ -130,19 +132,19 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           if (event.type === E.CHANGE_PLAYER_REQ) {
             // stop old agent if exists
             const currentPlayerInfo: PlayerContext = ctx.opponents[event.kind];
-            if (currentPlayerInfo.type === 'agent') {
+            if (currentPlayerInfo.type === PLAYER_TYPE.agent) {
               currentPlayerInfo.ref.stop?.();
             }
 
             // spawn a new one if needed
-            const newPlayerSymbol = ctx.turnOrder.X === event.kind ? 'x' : '0';
+            const newPlayerSymbol = ctx.opponents[ctx.turnOrder.current].symbol;
             const newPlayerInfo: PlayerContext =
-              event.value === 'user'
+              event.value === PLAYER_TYPE.user
                 ? {
-                    type: 'user',
+                    type: PLAYER_TYPE.user,
                   }
                 : {
-                    type: 'agent',
+                    type: PLAYER_TYPE.agent,
                     ref: spawn(createTicTacToeActor(newPlayerSymbol), { name: event.kind }),
                   };
 
@@ -177,7 +179,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [A.awaitTurn]: (ctx) => {
         const player = ctx.opponents[ctx.turnOrder.current];
-        if (player.type === 'agent') {
+        if (player.type === PLAYER_TYPE.agent) {
           player.ref.send({
             // TODO: pass field state
             type: Msg.MAKE_TURN_REQ,
@@ -194,7 +196,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         field: (ctx, event) => {
           if (event.type === E.ACCEPT_TURN_REQ) {
             const newField: FieldContext = [...ctx.field];
-            const symbol = ctx.turnOrder.X === ctx.turnOrder.current ? 'x' : '0';
+            const { symbol } = ctx.opponents[ctx.turnOrder.current];
             newField[event.index] = symbol;
             return newField;
           }
@@ -209,7 +211,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
       [A.switchTurn]: assign({
         turnOrder: (ctx) => ({
           ...ctx.turnOrder,
-          current: ctx.turnOrder.current === 'player1' ? 'player2' : 'player1',
+          current: ctx.turnOrder.current === PLAYER_NUM.player1 ? PLAYER_NUM.player2 : PLAYER_NUM.player1,
           turnsMade: ctx.turnOrder.turnsMade + 1,
         }),
       }),

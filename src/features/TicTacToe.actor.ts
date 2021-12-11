@@ -20,7 +20,7 @@ const TicTacToeActorStateNodes = {
   tryingToFork: '@/tryingToFork',
   tryingToBlockFork: '@/tryingToBlockFork',
   tryingToTakeCenter: '@/tryingToTakeCenter',
-  tryingToTakeOppositeCornter: '@/tryingToTakeOppositeCornter',
+  tryingToTakeOppositeCorner: '@/tryingToTakeOppositeCorner',
   tryingToTakeCorner: '@/tryingToTakeCorner',
   tryingToTakeEmptySide: '@/tryingToTakeEmptySide',
   givingUp: '@/givingUp',
@@ -38,7 +38,7 @@ export type TicTacToeActorState = {
     | typeof S.tryingToFork
     | typeof S.tryingToBlockFork
     | typeof S.tryingToTakeCenter
-    | typeof S.tryingToTakeOppositeCornter
+    | typeof S.tryingToTakeOppositeCorner
     | typeof S.tryingToTakeCorner
     | typeof S.tryingToTakeEmptySide
     | typeof S.givingUp;
@@ -67,7 +67,7 @@ export const createTicTacToeActor = (
       [S.tryingToFork]: {},
       [S.tryingToBlockFork]: {},
       [S.tryingToTakeCenter]: {},
-      [S.tryingToTakeOppositeCornter]: {},
+      [S.tryingToTakeOppositeCorner]: {},
       [S.tryingToTakeCorner]: {},
       [S.tryingToTakeEmptySide]: {},
       [S.givingUp]: {},
