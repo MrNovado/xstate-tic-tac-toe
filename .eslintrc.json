@@ -36,6 +36,7 @@
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": "off",
     "no-restricted-syntax": "off",
+    "no-unused-vars": "warn",
     "import/extensions": [
       "error",
       "ignorePackages",

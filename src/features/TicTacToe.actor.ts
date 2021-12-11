@@ -187,40 +187,133 @@ export const createTicTacToeActor = (
 
         [A.assesWinning]: assign({
           moveReady: ({ field, symbol }) => {
-            const combination = find2InARowWith1Free(field, symbol);
-            const turnTo = combination?.find((index) => field[index] === null);
-            if (turnTo) {
-              return { type: 'commit', turnTo };
-            }
-
-            return { type: 'tryOtherMove' };
+            return assesWinning(field, symbol);
           },
         }),
         [A.assesBlockingWin]: assign({
           moveReady: ({ field, symbol }) => {
             const opponentSymbol = getOpponent(symbol);
-            const combination = find2InARowWith1Free(field, opponentSymbol);
-            const turnTo = combination?.find((index) => field[index] === null);
-            if (turnTo) {
-              return { type: 'commit', turnTo };
-            }
-
-            return { type: 'tryOtherMove' };
+            return assesWinning(field, opponentSymbol);
           },
         }),
         [A.assesForking]: assign({
           moveReady: ({ field, symbol }) => {
-            const fork = findAFork(field, symbol);
-            if (fork) {
-              return { type: 'commit', turnTo: fork.forkIndex };
+            return assesForking(field, symbol);
+          },
+        }),
+        [A.assesBlockingFork]: assign({
+          moveReady: ({ field, symbol }) => {
+            const opponentSymbol = getOpponent(symbol);
+            return assesForking(field, opponentSymbol);
+          },
+        }),
+        [A.assesTakingCenter]: assign({
+          moveReady: ({ field }) => {
+            if (field[FIELD.CENTER] === null) {
+              return { type: 'commit', turnTo: FIELD.CENTER };
             }
 
             return { type: 'tryOtherMove' };
           },
         }),
+        [A.assesTakingOppositeCorner]: assign({
+          moveReady: ({ field, symbol }) => {
+            const opponent = getOpponent(symbol);
+            // if my opponent is in a corner, and
+            // if the opposite corner is empty
+            const invariants = [
+              {
+                is: field[FIELD.CORNERS.TOP_LEFT] === opponent && field[FIELD.CORNERS.BOT_RIGHT] === null,
+                index: FIELD.CORNERS.BOT_RIGHT,
+              },
+              {
+                is: field[FIELD.CORNERS.TOP_RIGHT] === opponent && field[FIELD.CORNERS.BOT_LEFT] === null,
+                index: FIELD.CORNERS.BOT_LEFT,
+              },
+              {
+                is: field[FIELD.CORNERS.BOT_LEFT] === opponent && field[FIELD.CORNERS.TOP_RIGHT] === null,
+                index: FIELD.CORNERS.TOP_RIGHT,
+              },
+              {
+                is: field[FIELD.CORNERS.BOT_RIGHT] === opponent && field[FIELD.CORNERS.TOP_LEFT] === null,
+                index: FIELD.CORNERS.TOP_LEFT,
+              },
+            ];
+
+            const oppositeCorner = invariants.find((inv) => inv.is);
+            if (oppositeCorner) {
+              return { type: 'commit', turnTo: oppositeCorner.index };
+            }
+
+            return { type: 'tryOtherMove' };
+          },
+        }),
+        [A.assesTakingCorner]: assign({
+          moveReady: ({ field }) => {
+            const freeCorner = [
+              { value: field[FIELD.CORNERS.TOP_LEFT], index: FIELD.CORNERS.TOP_LEFT },
+              { value: field[FIELD.CORNERS.TOP_RIGHT], index: FIELD.CORNERS.TOP_RIGHT },
+              { value: field[FIELD.CORNERS.BOT_LEFT], index: FIELD.CORNERS.BOT_LEFT },
+              { value: field[FIELD.CORNERS.BOT_RIGHT], index: FIELD.CORNERS.BOT_RIGHT },
+            ].find((corner) => corner.value === null);
+
+            if (freeCorner) {
+              return { type: 'commit', turnTo: freeCorner.index };
+            }
+
+            return { type: 'tryOtherMove' };
+          },
+        }),
+        [A.assesTakingEmptySide]: assign({
+          moveReady: ({ field }) => {
+            const freeSide = [
+              { value: field[FIELD.EDGES.TOP], index: FIELD.EDGES.TOP },
+              { value: field[FIELD.EDGES.LEFT], index: FIELD.EDGES.LEFT },
+              { value: field[FIELD.EDGES.RIGHT], index: FIELD.EDGES.RIGHT },
+              { value: field[FIELD.EDGES.BOT], index: FIELD.EDGES.BOT },
+            ].find((side) => side.value === null);
+
+            if (freeSide) {
+              return { type: 'commit', turnTo: freeSide.index };
+            }
+
+            return { type: 'tryOtherMove' };
+          },
+        }),
+
+        [A.giveUp]: sendParent((): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
+          return { type: Msg.GIVE_UP_TURN_REQ };
+        }),
       },
     },
   );
+
+/*
+ * COMMON ACTIONS =============================================================
+ */
+
+function assesWinning(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
+  const combination = find2InARowWith1Free(field, symbol);
+  const turnTo = combination?.find((index) => field[index] === null);
+  if (turnTo) {
+    return { type: 'commit', turnTo };
+  }
+
+  return { type: 'tryOtherMove' };
+}
+
+function assesForking(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
+  const fork = findAFork(field, symbol);
+  if (fork) {
+    return { type: 'commit', turnTo: fork.intersectionIndex };
+  }
+
+  return { type: 'tryOtherMove' };
+}
+
+/*
+ * COMMON UTILS ===============================================================
+ */
 
 function getOpponent(symbol: PlayerFieldSymbol) {
   return symbol === PLAYER_SYMBOL.x ? PLAYER_SYMBOL.o : PLAYER_SYMBOL.x;
@@ -245,7 +338,7 @@ function find2InARowWith1Free(field: FieldContext, symbol: PlayerFieldSymbol) {
   });
 }
 
-function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { forkIndex: FieldCellIndex } | null {
+function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { intersectionIndex: FieldCellIndex } | null {
   // if there are two intersecting rows, columns, or diagonals
   // with one of my pieces and two blanks,
   // =====================================
@@ -286,7 +379,7 @@ function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { forkIndex:
           const intersectionEmpty = field[index] === null;
           if (intersection && intersectionEmpty) {
             return {
-              forkIndex: index,
+              intersectionIndex: index,
             };
           }
         }
@@ -297,7 +390,7 @@ function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { forkIndex:
           const intersectionEmpty = field[index] === null;
           if (intersection && intersectionEmpty) {
             return {
-              forkIndex: index,
+              intersectionIndex: index,
             };
           }
         }
@@ -316,7 +409,7 @@ function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { forkIndex:
           const intersectionEmpty = field[index] === null;
           if (intersection && intersectionEmpty) {
             return {
-              forkIndex: index,
+              intersectionIndex: index,
             };
           }
         }
@@ -324,8 +417,9 @@ function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { forkIndex:
     }
   }
 
+  // 2 diagonals can only intersect in the center
   if (diagonals.length === 2 && field[FIELD.CENTER] === null) {
-    return { forkIndex: FIELD.CENTER };
+    return { intersectionIndex: FIELD.CENTER };
   }
 
   return null;
