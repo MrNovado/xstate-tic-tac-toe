@@ -50,7 +50,7 @@ export const TicTacToeActorActions = {
   assesTakingCenter: 'assesTakingCenter',
   assesTakingOppositeCorner: 'assesTakingOppositeCorner',
   assesTakingCorner: 'assesTakingCorner',
-  assesTakingEmptySide: 'assesTakingEmptySide',
+  assesTakingSide: 'assesTakingSide',
   giveUp: 'giveUp',
 } as const;
 

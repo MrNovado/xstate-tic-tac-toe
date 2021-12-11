@@ -141,7 +141,7 @@ export const createTicTacToeActor = (
           },
         },
         [S.tryingToTakeEmptySide]: {
-          entry: A.assesTakingEmptySide,
+          entry: A.assesTakingSide,
           on: {
             '': [
               MAKING_TURN_ACTION,
@@ -163,11 +163,9 @@ export const createTicTacToeActor = (
       },
     },
     {
-      // TODO:
       guards: {
         [C.verifyTurnReady]: ({ moveReady }: TicTacToeActorContext) => moveReady?.type === 'commit',
       },
-      // TODO:
       actions: {
         [A.saveField]: assign({ field: (_, event) => event.field }),
         [A.makeTurn]: sendParent(
@@ -221,7 +219,7 @@ export const createTicTacToeActor = (
             const opponent = getOpponent(symbol);
             // if my opponent is in a corner, and
             // if the opposite corner is empty
-            const invariants = [
+            const corners = [
               {
                 is: field[FIELD.CORNERS.TOP_LEFT] === opponent && field[FIELD.CORNERS.BOT_RIGHT] === null,
                 index: FIELD.CORNERS.BOT_RIGHT,
@@ -240,7 +238,8 @@ export const createTicTacToeActor = (
               },
             ];
 
-            const oppositeCorner = invariants.find((inv) => inv.is);
+            // TODO: introduce randomness when several variants are possible
+            const oppositeCorner = corners.find((inv) => inv.is);
             if (oppositeCorner) {
               return { type: 'commit', turnTo: oppositeCorner.index };
             }
@@ -250,13 +249,15 @@ export const createTicTacToeActor = (
         }),
         [A.assesTakingCorner]: assign({
           moveReady: ({ field }) => {
-            const freeCorner = [
+            const corners = [
               { value: field[FIELD.CORNERS.TOP_LEFT], index: FIELD.CORNERS.TOP_LEFT },
               { value: field[FIELD.CORNERS.TOP_RIGHT], index: FIELD.CORNERS.TOP_RIGHT },
               { value: field[FIELD.CORNERS.BOT_LEFT], index: FIELD.CORNERS.BOT_LEFT },
               { value: field[FIELD.CORNERS.BOT_RIGHT], index: FIELD.CORNERS.BOT_RIGHT },
-            ].find((corner) => corner.value === null);
+            ];
 
+            // TODO: introduce randomness when several variants are possible
+            const freeCorner = corners.find((corner) => corner.value === null);
             if (freeCorner) {
               return { type: 'commit', turnTo: freeCorner.index };
             }
@@ -264,15 +265,17 @@ export const createTicTacToeActor = (
             return { type: 'tryOtherMove' };
           },
         }),
-        [A.assesTakingEmptySide]: assign({
+        [A.assesTakingSide]: assign({
           moveReady: ({ field }) => {
-            const freeSide = [
+            const sides = [
               { value: field[FIELD.EDGES.TOP], index: FIELD.EDGES.TOP },
               { value: field[FIELD.EDGES.LEFT], index: FIELD.EDGES.LEFT },
               { value: field[FIELD.EDGES.RIGHT], index: FIELD.EDGES.RIGHT },
               { value: field[FIELD.EDGES.BOT], index: FIELD.EDGES.BOT },
-            ].find((side) => side.value === null);
+            ];
 
+            // TODO: introduce randomness when several variants are possible
+            const freeSide = sides.find((side) => side.value === null);
             if (freeSide) {
               return { type: 'commit', turnTo: freeSide.index };
             }
