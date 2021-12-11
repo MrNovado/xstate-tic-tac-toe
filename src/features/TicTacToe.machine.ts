@@ -49,8 +49,8 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [S.settingUp]: {
         on: {
-          [E.CHANGE_PLAYER_REQ]: A.setPlayer,
-          [E.CHANGE_TURN_ORDER_REQ]: A.setTurnOrder,
+          [E.CHANGE_PLAYER_REQ]: { actions: [A.setPlayer] },
+          [E.CHANGE_TURN_ORDER_REQ]: { actions: [A.setTurnOrder] },
           [E.CONTINUE_REQ]: {
             target: S.playing,
           },
@@ -60,6 +60,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        * While playing we will:
        */
       [S.playing]: {
+        initial: S.playingTakingTurn,
         states: {
           /**
            * - wait for their turn
@@ -79,7 +80,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
                 },
               ],
               [E.GIVE_UP_TURN_REQ]: {
-                target: S.showingGameEndResults,
+                target: `#${S.showingGameEndResults}`,
                 actions: [A.saveSurrender],
               },
             },
@@ -89,17 +90,15 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
            * - or ask other player to move
            */
           [S.playingCheckingGameState]: {
-            on: {
-              '': [
-                {
-                  target: S.showingGameEndResults,
-                  cond: C.verifyGameEnd,
-                },
-                {
-                  target: S.playingTakingTurn,
-                },
-              ],
-            },
+            always: [
+              {
+                target: `#${S.showingGameEndResults}`,
+                cond: C.verifyGameEnd,
+              },
+              {
+                target: S.playingTakingTurn,
+              },
+            ],
           },
         },
       },
@@ -108,6 +107,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        * - we should ask if players want to retry
        */
       [S.showingGameEndResults]: {
+        id: S.showingGameEndResults,
         on: {
           [E.RETRY_REQ]: {
             target: S.settingUp,
@@ -206,6 +206,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           player.ref.send({
             type: Msg.MAKE_TURN_REQ,
             field: ctx.field,
+            player: ctx.turnOrder.current,
           });
         } else {
           // just waiting for a user to make their move

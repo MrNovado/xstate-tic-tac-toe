@@ -15,6 +15,7 @@ import {
   DIAGONALS,
   ROWS,
   FieldCellIndex,
+  PLAYER_NUM,
 } from './TicTacToe.common';
 import {
   TicTacToeActorContext,
@@ -44,6 +45,7 @@ export const createTicTacToeActor = (
     {
       context: {
         field: FIELD_INITIAL,
+        player: PLAYER_NUM.player2,
         symbol: givenSymbol,
         moveReady: null,
       },
@@ -59,110 +61,94 @@ export const createTicTacToeActor = (
         },
 
         [S.makingTurn]: {
-          on: {
-            '': {
+          always: [
+            {
               target: S.awaitingTurn,
               actions: A.makeTurn,
             },
-          },
+          ],
         },
 
         [S.tryingToWin]: {
           entry: A.assesWinning,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToBlockWin,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToBlockWin,
+            },
+          ],
         },
         [S.tryingToBlockWin]: {
           entry: A.assesBlockingWin,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToFork,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToFork,
+            },
+          ],
         },
         [S.tryingToFork]: {
           entry: A.assesForking,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToBlockFork,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToBlockFork,
+            },
+          ],
         },
         [S.tryingToBlockFork]: {
           entry: A.assesBlockingFork,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToTakeCenter,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToTakeCenter,
+            },
+          ],
         },
         [S.tryingToTakeCenter]: {
           entry: A.assesTakingCenter,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToTakeOppositeCorner,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToTakeOppositeCorner,
+            },
+          ],
         },
         [S.tryingToTakeOppositeCorner]: {
           entry: A.assesTakingOppositeCorner,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToTakeCorner,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToTakeCorner,
+            },
+          ],
         },
         [S.tryingToTakeCorner]: {
           entry: A.assesTakingCorner,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.tryingToTakeEmptySide,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.tryingToTakeEmptySide,
+            },
+          ],
         },
         [S.tryingToTakeEmptySide]: {
           entry: A.assesTakingSide,
-          on: {
-            '': [
-              MAKING_TURN_ACTION,
-              {
-                target: S.givingUp,
-              },
-            ],
-          },
+          always: [
+            MAKING_TURN_ACTION,
+            {
+              target: S.givingUp,
+            },
+          ],
         },
 
         [S.givingUp]: {
-          on: {
-            '': {
+          always: [
+            {
               target: S.awaitingTurn,
               actions: A.giveUp,
             },
-          },
+          ],
         },
       },
     },
@@ -176,18 +162,20 @@ export const createTicTacToeActor = (
          */
 
         [A.saveField]: assign({
+          player: (_, event) => event.player,
           field: (_, event) => event.field,
         }),
 
         [A.makeTurn]: sendParent(
           ({
+            player,
             moveReady,
           }): Extract<
             TicTacToeEvents,
             { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ | typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
           > => {
             if (moveReady?.type === 'commit') {
-              return { type: Msg.ACCEPT_TURN_REQ, index: moveReady.turnTo };
+              return { type: Msg.ACCEPT_TURN_REQ, index: moveReady.turnTo, sender: player };
             }
 
             return { type: Msg.GIVE_UP_TURN_REQ };

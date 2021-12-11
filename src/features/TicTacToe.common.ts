@@ -94,7 +94,7 @@ export type TicTacToeEvents =
   | { type: typeof TicTacToeEventTypes.CHANGE_PLAYER_REQ; kind: PlayerTurnContext; value: PlayerContext['type'] }
   | { type: typeof TicTacToeEventTypes.CONTINUE_REQ }
   | { type: typeof TicTacToeEventTypes.CHANGE_TURN_ORDER_REQ; first: PlayerTurnContext }
-  | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex }
+  | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex; sender: PlayerTurnContext }
   | { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
   | { type: typeof TicTacToeEventTypes.RETRY_REQ };
 
@@ -111,11 +111,8 @@ export type TicTacToeContext = {
 
   field: FieldContext;
 
-  // strictly 3 unique indexes;
-  // we cannot enforce this with types,
-  // because uniqueness is decided at runtime,
-  // but we can signal our intent
-  winCombo: Set<[FieldCellIndex, FieldCellIndex, FieldCellIndex]> | null;
+  // TODO: strictly 3 unique indexes?
+  winCombo: [FieldCellIndex, FieldCellIndex, FieldCellIndex] | null;
   surrendered: PlayerTurnContext | null;
 };
 
@@ -124,4 +121,8 @@ export const TicTacToeActorEventTypes = {
 } as const;
 
 // Machine to Actor -- Msg
-export type TicTacToeActorEvents = { type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ; field: FieldContext };
+export type TicTacToeActorEvents = {
+  type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ;
+  field: FieldContext;
+  player: PlayerTurnContext;
+};
