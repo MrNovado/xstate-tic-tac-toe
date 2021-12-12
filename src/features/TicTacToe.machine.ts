@@ -90,6 +90,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
            * - or ask other player to move
            */
           [S.playingCheckingGameState]: {
+            entry: A.assesGameEnd,
             always: [
               {
                 target: `#${S.showingGameEndResults}`,
@@ -108,7 +109,6 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [S.showingGameEndResults]: {
         id: S.showingGameEndResults,
-        entry: A.saveGameResults,
         on: {
           [E.RETRY_REQ]: {
             target: S.playing,
@@ -130,20 +130,8 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         }
         return false;
       },
-      [C.verifyGameEnd]: ({ field }) => {
-        const someCombo = FIELD.COMBINATIONS.find((combination) => {
-          const [a, b, c] = combination;
-          if (field[a] && field[a] === field[b] && field[a] === field[c]) {
-            return true;
-          }
-          return false;
-        });
-
-        const hasFreeSpace = field.some((cellValue) => cellValue === null);
-        if (someCombo || !hasFreeSpace) {
-          return true;
-        }
-        return false;
+      [C.verifyGameEnd]: ({ winCombo, surrendered }) => {
+        return Boolean(winCombo || surrendered);
       },
     },
     actions: {
@@ -247,7 +235,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         },
       }),
 
-      [A.saveGameResults]: assign({
+      [A.assesGameEnd]: assign({
         winCombo: ({ field, winCombo }) => {
           const someCombo = FIELD.COMBINATIONS.find((combination) => {
             const [a, b, c] = combination;
