@@ -1,14 +1,17 @@
 import { useMachine } from '@xstate/react';
 import { useEffect } from 'react';
+import { inspect } from '@xstate/inspect';
 import { FieldCellIndex, PLAYER_NUM, PLAYER_TYPE, TicTacToeEventTypes } from '../features/TicTacToe.common';
 import { TicTacToeMachine } from '../features/TicTacToe.machine';
 import { TicTacToeStateNodes as S } from '../features/TicTacToe.machine.types';
+
+inspect({ iframe: false });
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
 
 export const TicTacToePage: React.FC = () => {
-  const [machineState, send] = useMachine(TicTacToeMachine);
+  const [machineState, send] = useMachine(TicTacToeMachine, { devTools: true });
   const renderMachineState = () => {
     switch (true) {
       case machineState.matches(S.settingUp): {
@@ -19,7 +22,7 @@ export const TicTacToePage: React.FC = () => {
               type="button"
               onClick={() => send({ type: TicTacToeEventTypes.CONTINUE_REQ })}
             >
-              Player vs player
+              Player vs Player
             </button>
             <button
               style={{ minWidth: 150, height: 50 }}
@@ -74,7 +77,7 @@ export const TicTacToePage: React.FC = () => {
 
         return (
           <div style={{ display: 'grid', gap: 16 }}>
-            <h3>{`Waiting for [${currentPlayer} ${currentPlayerSymbol}] to make turn`}</h3>
+            <h3>{`${currentPlayer} (${currentPlayerSymbol}) to make turn`}</h3>
             <div
               style={{
                 display: 'grid',
