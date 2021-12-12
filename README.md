@@ -2,7 +2,7 @@
 
 Tic-tac-toe with actors using `xstate`. 
 
-[Live Demo](https://mrnovado.github.io/xstate-tic-tac-toe/)
+[Live Demo](https://mrnovado.github.io/xstate-tic-tac-toe/) will also open `stately` inspector on a blank page.
 
 Play against other player/AI, or watch a match between AIs.
 
