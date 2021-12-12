@@ -130,8 +130,8 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         }
         return false;
       },
-      [C.verifyGameEnd]: ({ winCombo, surrendered }) => {
-        return Boolean(winCombo || surrendered);
+      [C.verifyGameEnd]: ({ winCombo, surrendered, turnOrder }) => {
+        return Boolean(winCombo || surrendered) || turnOrder.turnsMade === 9;
       },
     },
     actions: {
