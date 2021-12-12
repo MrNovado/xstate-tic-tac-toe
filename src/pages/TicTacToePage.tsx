@@ -5,7 +5,7 @@ import { FieldCellIndex, PLAYER_NUM, PLAYER_TYPE, TicTacToeEventTypes } from '..
 import { TicTacToeMachine } from '../features/TicTacToe.machine';
 import { TicTacToeStateNodes as S } from '../features/TicTacToe.machine.types';
 
-inspect({ iframe: false });
+inspect({ iframe: () => document.getElementById('stately-frame') as HTMLIFrameElement });
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 const noop = () => {};
