@@ -1,6 +1,8 @@
 # Abstract
 
-Tic-tac-toe with actors using `xstate`.
+Tic-tac-toe with actors using `xstate`. 
+
+[Live Demo](https://mrnovado.github.io/xstate-tic-tac-toe/)
 
 Play against other player/AI, or watch a match between AIs.
 

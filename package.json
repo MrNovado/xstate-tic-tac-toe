@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "name": "xstate-tic-tac-toe",
   "description": "Tic-tac-toe with actors using xstate",
+  "homepage": "https://mrnovado.github.io/xstate-tic-tac-toe/",
   "keywords": [
     "xstate",
     "react"
@@ -44,12 +45,14 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "gh-pages": "^3.2.3",
     "prettier": "^2.2.1",
     "prettier-eslint": "^12.0.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
+    "deploy": "gh-pages -d build",
     "test": "react-scripts test",
     "qa": "yarn run qa:types && yarn run qa:lint",
     "qa:types": "tsc --noEmit",
