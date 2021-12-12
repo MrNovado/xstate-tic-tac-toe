@@ -27,6 +27,7 @@ export const TicTacToeMachineActions = {
   saveGameResults: 'saveGameResults',
   switchTurn: 'switchTurn',
   revertContextToInitial: 'revertContextToInitial',
+  revertContextButOpponents: 'revertContextButOpponents',
 } as const;
 
 export const TicTacToeMachineConditions = {

@@ -111,6 +111,10 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         entry: A.saveGameResults,
         on: {
           [E.RETRY_REQ]: {
+            target: S.playing,
+            actions: [A.revertContextButOpponents],
+          },
+          [E.SET_UP_NEW_GAME]: {
             target: S.settingUp,
             actions: [A.revertContextToInitial],
           },
@@ -147,6 +151,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        * Reverting context to initial
        */
       [A.revertContextToInitial]: assign({ ...initialContext }),
+      [A.revertContextButOpponents]: assign((ctx) => ({ ...initialContext, opponents: ctx.opponents })),
 
       /**
        * Setting a player to be controlled by a user or an agent

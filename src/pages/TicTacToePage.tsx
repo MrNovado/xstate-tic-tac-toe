@@ -104,9 +104,15 @@ export const TicTacToePage: React.FC = () => {
                 </div>
               ))}
             </div>
-            <button type="button" onClick={() => send({ type: TicTacToeEventTypes.GIVE_UP_TURN_REQ })}>
-              Give up
-            </button>
+            {isPlayersTurn ? (
+              <button type="button" onClick={() => send({ type: TicTacToeEventTypes.GIVE_UP_TURN_REQ })}>
+                Give up
+              </button>
+            ) : (
+              <button type="button" disabled>
+                ---
+              </button>
+            )}
           </div>
         );
       }
@@ -142,12 +148,15 @@ export const TicTacToePage: React.FC = () => {
                 </div>
               ))}
             </div>
-            {machineState.context.winCombo && <div>{`Win combination ${machineState.context.winCombo}`}</div>}
-            {machineState.context.surrendered && <div>{`${machineState.context.surrendered} surrendered!`}</div>}
-            {!machineState.context.winCombo && !machineState.context.surrendered && <div>It`s a draw</div>}
             <button type="button" onClick={() => send({ type: TicTacToeEventTypes.RETRY_REQ })}>
               Retry
             </button>
+            <button type="button" onClick={() => send({ type: TicTacToeEventTypes.SET_UP_NEW_GAME })}>
+              New game
+            </button>
+            {machineState.context.winCombo && <div>{`Win combination ${machineState.context.winCombo}`}</div>}
+            {machineState.context.surrendered && <div>{`${machineState.context.surrendered} surrendered!`}</div>}
+            {!machineState.context.winCombo && !machineState.context.surrendered && <div>It`s a draw</div>}
           </div>
         );
       }

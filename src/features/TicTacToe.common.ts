@@ -88,6 +88,7 @@ export const TicTacToeEventTypes = {
   ACCEPT_TURN_REQ: 'ACCEPT_TURN_REQ',
   GIVE_UP_TURN_REQ: 'GIVE_UP_TURN_REQ',
   RETRY_REQ: 'RETRY_REQ',
+  SET_UP_NEW_GAME: 'SET_UP_NEW_GAME',
 } as const;
 
 export type TicTacToeEvents =
@@ -96,7 +97,8 @@ export type TicTacToeEvents =
   | { type: typeof TicTacToeEventTypes.CHANGE_TURN_ORDER_REQ; first: PlayerTurnContext }
   | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex; sender: PlayerTurnContext }
   | { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
-  | { type: typeof TicTacToeEventTypes.RETRY_REQ };
+  | { type: typeof TicTacToeEventTypes.RETRY_REQ }
+  | { type: typeof TicTacToeEventTypes.SET_UP_NEW_GAME };
 
 export type TicTacToeContext = {
   opponents: {

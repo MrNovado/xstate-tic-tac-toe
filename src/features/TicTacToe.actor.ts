@@ -1,5 +1,7 @@
 import { createMachine, StateMachine, assign, sendParent } from 'xstate';
 
+import sample from 'lodash.sample';
+
 import {
   TicTacToeActorEvents,
   TicTacToeActorEventTypes as E,
@@ -10,11 +12,6 @@ import {
   TicTacToeEventTypes,
   FIELD,
   FieldContext,
-  PLAYER_SYMBOL,
-  COLUMNS,
-  DIAGONALS,
-  ROWS,
-  FieldCellIndex,
   PLAYER_NUM,
 } from './TicTacToe.common';
 import {
@@ -24,6 +21,7 @@ import {
   TicTacToeActorConditions as C,
   TicTacToeActorStateNodes as S,
 } from './TicTacToe.actor.types';
+import { getOpponent, find2InARowWith1Free, findAFork } from './TicTacToe.actor.business';
 
 const MAKING_TURN_ACTION = {
   target: S.makingTurn,
@@ -251,8 +249,8 @@ export const createTicTacToeActor = (
               },
             ];
 
-            // TODO: introduce randomness when several variants are possible
-            const oppositeCorner = corners.find((inv) => inv.is);
+            const possibleOppositeCorners = corners.filter((inv) => inv.is);
+            const oppositeCorner = sample(possibleOppositeCorners);
             if (oppositeCorner) {
               return { type: 'commit', turnTo: oppositeCorner.index };
             }
@@ -269,8 +267,8 @@ export const createTicTacToeActor = (
               { value: field[FIELD.CORNERS.BOT_RIGHT], index: FIELD.CORNERS.BOT_RIGHT },
             ];
 
-            // TODO: introduce randomness when several variants are possible
-            const freeCorner = corners.find((corner) => corner.value === null);
+            const possibleFreeCorners = corners.filter((corner) => corner.value === null);
+            const freeCorner = sample(possibleFreeCorners);
             if (freeCorner) {
               return { type: 'commit', turnTo: freeCorner.index };
             }
@@ -287,8 +285,8 @@ export const createTicTacToeActor = (
               { value: field[FIELD.EDGES.BOT], index: FIELD.EDGES.BOT },
             ];
 
-            // TODO: introduce randomness when several variants are possible
-            const freeSide = sides.find((side) => side.value === null);
+            const possibleFreeSides = sides.filter((side) => side.value === null);
+            const freeSide = sample(possibleFreeSides);
             if (freeSide) {
               return { type: 'commit', turnTo: freeSide.index };
             }
@@ -321,120 +319,4 @@ function assesForking(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToe
   }
 
   return { type: 'tryOtherMove' };
-}
-
-/*
- * COMMON UTILS ===============================================================
- */
-
-function getOpponent(symbol: PlayerFieldSymbol) {
-  return symbol === PLAYER_SYMBOL.x ? PLAYER_SYMBOL.o : PLAYER_SYMBOL.x;
-}
-
-function find2InARowWith1Free(field: FieldContext, symbol: PlayerFieldSymbol) {
-  const opponent = getOpponent(symbol);
-  const twoInARow = FIELD.COMBINATIONS.find((row) => {
-    const actorSymbolsInARow = row.reduce<number>((acc, index) => {
-      if (field[index] === symbol) {
-        return acc + 1;
-      }
-
-      if (field[index] === opponent) {
-        return acc - 1;
-      }
-
-      return acc;
-    }, 0);
-
-    return actorSymbolsInARow === 2;
-  });
-
-  return twoInARow;
-}
-
-function findAFork(field: FieldContext, symbol: PlayerFieldSymbol): { intersectionIndex: FieldCellIndex } | null {
-  // if there are two intersecting rows, columns, or diagonals
-  // with one of my pieces and two blanks,
-  // =====================================
-  //  [*,X,*]
-  //  [X,_,_] <- 2 blanks on row 2
-  //  [*,_,*]
-  //     ^- 2 blanks on col 2
-  //  cell 4 (center) is an intersection
-  // =====================================
-  // and if the intersecting space is empty
-  const oneTakenAnd2Blanks = (line: FieldCellIndex[]) => {
-    const howManyTaken = line.reduce<number>((acc, index) => {
-      if (field[index] === symbol) {
-        return acc + 1;
-      }
-
-      if (field[index] === null) {
-        return acc;
-      }
-
-      return acc - 1;
-    }, 0);
-
-    return howManyTaken === 1;
-  };
-
-  const rows = ROWS.filter(oneTakenAnd2Blanks);
-  const columns = COLUMNS.filter(oneTakenAnd2Blanks);
-  const diagonals = DIAGONALS.filter(oneTakenAnd2Blanks);
-
-  // scanning rows-first
-  if (rows.length) {
-    for (const row of rows) {
-      for (const index of row) {
-        // against columns
-        for (const column of columns) {
-          const intersection = index in column;
-          const intersectionEmpty = field[index] === null;
-          if (intersection && intersectionEmpty) {
-            return {
-              intersectionIndex: index,
-            };
-          }
-        }
-
-        // against diagonals
-        for (const diag of diagonals) {
-          const intersection = index in diag;
-          const intersectionEmpty = field[index] === null;
-          if (intersection && intersectionEmpty) {
-            return {
-              intersectionIndex: index,
-            };
-          }
-        }
-      }
-    }
-  }
-
-  // scanning columns-first
-  if (columns.length) {
-    for (const column of columns) {
-      for (const index of column) {
-        // against diagonals
-        // (already scanned against rows if they were available)
-        for (const diag of diagonals) {
-          const intersection = index in diag;
-          const intersectionEmpty = field[index] === null;
-          if (intersection && intersectionEmpty) {
-            return {
-              intersectionIndex: index,
-            };
-          }
-        }
-      }
-    }
-  }
-
-  // 2 diagonals can only intersect in the center
-  if (diagonals.length === 2 && field[FIELD.CENTER] === null) {
-    return { intersectionIndex: FIELD.CENTER };
-  }
-
-  return null;
 }
