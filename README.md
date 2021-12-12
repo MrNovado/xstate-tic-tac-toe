@@ -6,6 +6,13 @@ Play against other player/AI, or watch a match between AIs.
 
 ~Fully typed using `TypeScript`.
 
+# How to
+
+To install and run:
+- clone the repo
+- `yarn`
+- `yarn start`
+
 # Machine
 
 Machine is organized to operate in 3 simple phases:
