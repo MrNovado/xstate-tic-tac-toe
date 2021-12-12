@@ -154,8 +154,16 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
             }
 
             // spawn a new one if needed
-            const newPlayerSymbol = event.kind === PLAYER_NUM.player1 ? PLAYER_SYMBOL.x : PLAYER_SYMBOL.o;
-            // TODO: simplify and incap this logic
+            const newPlayerSymbol = (() => {
+              if (event.kind === PLAYER_NUM.player1) {
+                const player1Symbol: TicTacToeContext['opponents']['player1']['symbol'] = PLAYER_SYMBOL.x;
+                return player1Symbol;
+              }
+
+              const player2Symbol: TicTacToeContext['opponents']['player2']['symbol'] = PLAYER_SYMBOL.o;
+              return player2Symbol;
+            })();
+
             const newPlayerInfo: TicTacToeContext['opponents']['player1'] | TicTacToeContext['opponents']['player2'] =
               event.value === PLAYER_TYPE.user
                 ? {
