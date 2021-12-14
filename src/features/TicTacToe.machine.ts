@@ -90,7 +90,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
            * - or ask other player to move
            */
           [S.playingCheckingGameState]: {
-            entry: A.assesGameEnd,
+            entry: A.tryGameEnd,
             always: [
               {
                 target: `#${S.showingGameEndResults}`,
@@ -243,7 +243,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         },
       }),
 
-      [A.assesGameEnd]: assign({
+      [A.tryGameEnd]: assign({
         winCombo: ({ field, winCombo }) => {
           const someCombo = FIELD.COMBINATIONS.find((combination) => {
             const [a, b, c] = combination;

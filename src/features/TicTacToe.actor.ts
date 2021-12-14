@@ -70,7 +70,7 @@ export const createTicTacToeActor = (
         },
 
         [S.tryingToWin]: {
-          entry: A.assesWinning,
+          entry: A.tryWinning,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -79,7 +79,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToBlockWin]: {
-          entry: A.assesBlockingWin,
+          entry: A.tryBlockingWin,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -88,7 +88,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToFork]: {
-          entry: A.assesForking,
+          entry: A.tryForking,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -97,7 +97,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToBlockFork]: {
-          entry: A.assesBlockingFork,
+          entry: A.tryBlockingFork,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -106,7 +106,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToTakeCenter]: {
-          entry: A.assesTakingCenter,
+          entry: A.tryTakingCenter,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -115,7 +115,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToTakeOppositeCorner]: {
-          entry: A.assesTakingOppositeCorner,
+          entry: A.tryTakingOppositeCorner,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -124,7 +124,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToTakeCorner]: {
-          entry: A.assesTakingCorner,
+          entry: A.tryTakingCorner,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -133,7 +133,7 @@ export const createTicTacToeActor = (
           ],
         },
         [S.tryingToTakeEmptySide]: {
-          entry: A.assesTakingSide,
+          entry: A.tryTakingSide,
           always: [
             MAKING_TURN_ACTION,
             {
@@ -194,29 +194,29 @@ export const createTicTacToeActor = (
          * ACTOR BUSINESS =====================================================
          */
 
-        [A.assesWinning]: assign({
+        [A.tryWinning]: assign({
           moveReady: ({ field, symbol }) => {
-            return assesWinning(field, symbol);
+            return tryWinning(field, symbol);
           },
         }),
-        [A.assesBlockingWin]: assign({
-          moveReady: ({ field, symbol }) => {
-            const opponentSymbol = getOpponent(symbol);
-            return assesWinning(field, opponentSymbol);
-          },
-        }),
-        [A.assesForking]: assign({
-          moveReady: ({ field, symbol }) => {
-            return assesForking(field, symbol);
-          },
-        }),
-        [A.assesBlockingFork]: assign({
+        [A.tryBlockingWin]: assign({
           moveReady: ({ field, symbol }) => {
             const opponentSymbol = getOpponent(symbol);
-            return assesForking(field, opponentSymbol);
+            return tryWinning(field, opponentSymbol);
           },
         }),
-        [A.assesTakingCenter]: assign({
+        [A.tryForking]: assign({
+          moveReady: ({ field, symbol }) => {
+            return tryForking(field, symbol);
+          },
+        }),
+        [A.tryBlockingFork]: assign({
+          moveReady: ({ field, symbol }) => {
+            const opponentSymbol = getOpponent(symbol);
+            return tryForking(field, opponentSymbol);
+          },
+        }),
+        [A.tryTakingCenter]: assign({
           moveReady: ({ field }) => {
             if (field[FIELD.CENTER] === null) {
               return { type: 'commit', turnTo: FIELD.CENTER };
@@ -225,7 +225,7 @@ export const createTicTacToeActor = (
             return { type: 'tryOtherMove' };
           },
         }),
-        [A.assesTakingOppositeCorner]: assign({
+        [A.tryTakingOppositeCorner]: assign({
           moveReady: ({ field, symbol }) => {
             const opponent = getOpponent(symbol);
             // if my opponent is in a corner, and
@@ -258,7 +258,7 @@ export const createTicTacToeActor = (
             return { type: 'tryOtherMove' };
           },
         }),
-        [A.assesTakingCorner]: assign({
+        [A.tryTakingCorner]: assign({
           moveReady: ({ field }) => {
             const corners = [
               { value: field[FIELD.CORNERS.TOP_LEFT], index: FIELD.CORNERS.TOP_LEFT },
@@ -276,7 +276,7 @@ export const createTicTacToeActor = (
             return { type: 'tryOtherMove' };
           },
         }),
-        [A.assesTakingSide]: assign({
+        [A.tryTakingSide]: assign({
           moveReady: ({ field }) => {
             const sides = [
               { value: field[FIELD.EDGES.TOP], index: FIELD.EDGES.TOP },
@@ -302,7 +302,7 @@ export const createTicTacToeActor = (
  * COMMON ACTIONS =============================================================
  */
 
-function assesWinning(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
+function tryWinning(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
   const combination = find2InARowWith1Free(field, symbol);
   const turnTo = combination?.find((index) => field[index] === null);
   if (turnTo !== undefined) {
@@ -312,7 +312,7 @@ function assesWinning(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToe
   return { type: 'tryOtherMove' };
 }
 
-function assesForking(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
+function tryForking(field: FieldContext, symbol: PlayerFieldSymbol): TicTacToeActorContext['moveReady'] {
   const fork = findAFork(field, symbol);
   if (fork) {
     return { type: 'commit', turnTo: fork.intersectionIndex };

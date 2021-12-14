@@ -22,7 +22,7 @@ export const TicTacToeMachineActions = {
   setPlayer: 'setPlayer',
   setTurnOrder: 'setTurnOrder',
   awaitTurn: 'awaitTurn',
-  assesGameEnd: 'assesGameEnd',
+  tryGameEnd: 'tryGameEnd',
   saveTurn: 'saveTurn',
   saveSurrender: 'saveSurrender',
   switchTurn: 'switchTurn',
