@@ -85,6 +85,7 @@ export const TicTacToeEventTypes = {
   CHANGE_PLAYER_REQ: 'CHANGE_PLAYER_REQ',
   CONTINUE_REQ: 'CONTINUE_REQ',
   CHANGE_TURN_ORDER_REQ: 'CHANGE_TURN_ORDER_REQ',
+  CHANGE_TRANSITION_DELAY_REQ: 'CHANGE_TRANSITION_DELAY_REQ',
   ACCEPT_TURN_REQ: 'ACCEPT_TURN_REQ',
   GIVE_UP_TURN_REQ: 'GIVE_UP_TURN_REQ',
   RETRY_REQ: 'RETRY_REQ',
@@ -95,12 +96,25 @@ export type TicTacToeEvents =
   | { type: typeof TicTacToeEventTypes.CHANGE_PLAYER_REQ; kind: PlayerTurnContext; value: PlayerContext['type'] }
   | { type: typeof TicTacToeEventTypes.CONTINUE_REQ }
   | { type: typeof TicTacToeEventTypes.CHANGE_TURN_ORDER_REQ; first: PlayerTurnContext }
+  | { type: typeof TicTacToeEventTypes.CHANGE_TRANSITION_DELAY_REQ; delay: TicTacToeTransitionDelay }
   | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex; sender: PlayerTurnContext }
   | { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
   | { type: typeof TicTacToeEventTypes.RETRY_REQ }
   | { type: typeof TicTacToeEventTypes.SET_UP_NEW_GAME };
 
+export const TIC_TAC_TOE_DELAY_OPTIONS = {
+  0: 0,
+  default: 300,
+  500: 500,
+  700: 700,
+  1000: 1000,
+} as const;
+
+export type TicTacToeTransitionDelay = typeof TIC_TAC_TOE_DELAY_OPTIONS[keyof typeof TIC_TAC_TOE_DELAY_OPTIONS];
+
 export type TicTacToeContext = {
+  actorTransitionDelay: TicTacToeTransitionDelay;
+
   opponents: {
     [PLAYER_NUM.player1]: PlayerContext & { symbol: Extract<PlayerFieldSymbol, typeof PLAYER_SYMBOL.x> };
     [PLAYER_NUM.player2]: PlayerContext & { symbol: Extract<PlayerFieldSymbol, typeof PLAYER_SYMBOL.o> };
@@ -113,7 +127,6 @@ export type TicTacToeContext = {
 
   field: FieldContext;
 
-  // TODO: strictly 3 unique indexes?
   winCombo: [FieldCellIndex, FieldCellIndex, FieldCellIndex] | null;
   surrendered: PlayerTurnContext | null;
 };
@@ -127,4 +140,5 @@ export type TicTacToeActorEvents = {
   type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ;
   field: FieldContext;
   player: PlayerTurnContext;
+  transitionDelay: TicTacToeTransitionDelay;
 };

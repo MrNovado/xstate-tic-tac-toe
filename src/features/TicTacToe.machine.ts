@@ -13,6 +13,7 @@ import {
   PLAYER_NUM,
   TicTacToeContext,
   FIELD,
+  TIC_TAC_TOE_DELAY_OPTIONS,
 } from './TicTacToe.common';
 
 import {
@@ -23,6 +24,7 @@ import {
 } from './TicTacToe.machine.types';
 
 const initialContext: TicTacToeContext = {
+  actorTransitionDelay: TIC_TAC_TOE_DELAY_OPTIONS.default,
   opponents: {
     [PLAYER_NUM.player1]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.x },
     [PLAYER_NUM.player2]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.o },
@@ -51,6 +53,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         on: {
           [E.CHANGE_PLAYER_REQ]: { actions: [A.setPlayer] },
           [E.CHANGE_TURN_ORDER_REQ]: { actions: [A.setTurnOrder] },
+          [E.CHANGE_TRANSITION_DELAY_REQ]: { actions: [A.setTransitionDelay] },
           [E.CONTINUE_REQ]: {
             target: S.playing,
           },
@@ -139,7 +142,11 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        * Reverting context to initial
        */
       [A.revertContextToInitial]: assign({ ...initialContext }),
-      [A.revertContextButOpponents]: assign((ctx) => ({ ...initialContext, opponents: ctx.opponents })),
+      [A.revertContextButOpponents]: assign((ctx) => ({
+        ...initialContext,
+        opponents: ctx.opponents,
+        actorTransitionDelay: ctx.actorTransitionDelay,
+      })),
 
       /**
        * Setting a player to be controlled by a user or an agent
@@ -203,6 +210,19 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
       }),
 
       /**
+       * Setting a transition delay for actors
+       */
+      [A.setTransitionDelay]: assign({
+        actorTransitionDelay: (ctx, event) => {
+          if (event.type === E.CHANGE_TRANSITION_DELAY_REQ) {
+            return event.delay;
+          }
+
+          return ctx.actorTransitionDelay;
+        },
+      }),
+
+      /**
        * Sending a message to an agent or waiting for a user to move
        */
       [A.awaitTurn]: (ctx) => {
@@ -212,6 +232,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
             type: Msg.MAKE_TURN_REQ,
             field: ctx.field,
             player: ctx.turnOrder.current,
+            transitionDelay: ctx.actorTransitionDelay,
           });
         } else {
           // just waiting for a user to make their move

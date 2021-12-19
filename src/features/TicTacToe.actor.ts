@@ -1,4 +1,4 @@
-import { createMachine, StateMachine, assign, sendParent } from 'xstate';
+import { createMachine, StateMachine, assign, sendParent, Expr } from 'xstate';
 
 import sample from 'lodash.sample';
 
@@ -13,6 +13,7 @@ import {
   FIELD,
   FieldContext,
   PLAYER_NUM,
+  TIC_TAC_TOE_DELAY_OPTIONS,
 } from './TicTacToe.common';
 import {
   TicTacToeActorContext,
@@ -23,12 +24,13 @@ import {
 } from './TicTacToe.actor.types';
 import { getOpponent, find2InARowWith1Free, findAFork } from './TicTacToe.actor.business';
 
+const MSG_DELAY = 300;
+
 const MAKING_TURN_ACTION = {
   target: S.makingTurn,
   cond: C.verifyTurnReady,
+  delay: ((ctx) => ctx.transitionDelay) as Expr<TicTacToeActorContext, TicTacToeActorEvents, number>,
 } as const;
-
-const MSG_DELAY = 300;
 
 /**
  * This machine defines actor' states using
@@ -48,6 +50,7 @@ export const createTicTacToeActor = (
         player: PLAYER_NUM.player2,
         symbol: givenSymbol,
         moveReady: null,
+        transitionDelay: TIC_TAC_TOE_DELAY_OPTIONS.default,
       },
       initial: S.awaitingTurn,
       states: {
@@ -61,92 +64,108 @@ export const createTicTacToeActor = (
         },
 
         [S.makingTurn]: {
-          always: [
+          /**
+           * NOTE: I'm only adding transition delay for educational purposes
+           *       so we could clearly see in inspector what's happening with the actor.
+           *
+           * Otherwise, I'd be using `always` instead of `after`.
+           */
+          after: [
             {
               target: S.awaitingTurn,
               actions: A.makeTurn,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
 
         [S.tryingToWin]: {
           entry: A.tryWinning,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToBlockWin,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToBlockWin]: {
           entry: A.tryBlockingWin,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToFork,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToFork]: {
           entry: A.tryForking,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToBlockFork,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToBlockFork]: {
           entry: A.tryBlockingFork,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToTakeCenter,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToTakeCenter]: {
           entry: A.tryTakingCenter,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToTakeOppositeCorner,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToTakeOppositeCorner]: {
           entry: A.tryTakingOppositeCorner,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToTakeCorner,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToTakeCorner]: {
           entry: A.tryTakingCorner,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.tryingToTakeEmptySide,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
         [S.tryingToTakeEmptySide]: {
           entry: A.tryTakingSide,
-          always: [
+          after: [
             MAKING_TURN_ACTION,
             {
               target: S.givingUp,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
 
         [S.givingUp]: {
-          always: [
+          after: [
             {
               target: S.awaitingTurn,
               actions: A.giveUp,
+              delay: (ctx) => ctx.transitionDelay,
             },
           ],
         },
@@ -164,6 +183,7 @@ export const createTicTacToeActor = (
         [A.saveField]: assign({
           player: (_, event) => event.player,
           field: (_, event) => event.field,
+          transitionDelay: (_, event) => event.transitionDelay,
         }),
 
         [A.makeTurn]: sendParent(

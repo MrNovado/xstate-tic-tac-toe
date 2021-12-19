@@ -21,6 +21,7 @@ export type TicTacToeState = {
 export const TicTacToeMachineActions = {
   setPlayer: 'setPlayer',
   setTurnOrder: 'setTurnOrder',
+  setTransitionDelay: 'setTransitionDelay',
   awaitTurn: 'awaitTurn',
   tryGameEnd: 'tryGameEnd',
   saveTurn: 'saveTurn',
