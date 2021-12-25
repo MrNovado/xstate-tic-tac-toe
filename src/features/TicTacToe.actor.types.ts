@@ -14,7 +14,7 @@ export type TicTacToeActorContext = {
   transitionDelay: TicTacToeTransitionDelay;
 };
 
-export const TicTacToeActorStateNodes = {
+export const TTT_ACTOR_STATE = {
   awaitingTurn: '@/awaitingTurn',
   makingTurn: '@/makingTurn',
   tryingToWin: '@/tryingToWin',
@@ -31,24 +31,24 @@ export const TicTacToeActorStateNodes = {
 export type TicTacToeActorState = {
   context: TicTacToeActorContext;
   value:
-    | typeof TicTacToeActorStateNodes.awaitingTurn
-    | typeof TicTacToeActorStateNodes.makingTurn
-    | typeof TicTacToeActorStateNodes.tryingToWin
-    | typeof TicTacToeActorStateNodes.tryingToBlockWin
-    | typeof TicTacToeActorStateNodes.tryingToFork
-    | typeof TicTacToeActorStateNodes.tryingToBlockFork
-    | typeof TicTacToeActorStateNodes.tryingToTakeCenter
-    | typeof TicTacToeActorStateNodes.tryingToTakeOppositeCorner
-    | typeof TicTacToeActorStateNodes.tryingToTakeCorner
-    | typeof TicTacToeActorStateNodes.tryingToTakeEmptySide
-    | typeof TicTacToeActorStateNodes.givingUp;
+    | typeof TTT_ACTOR_STATE.awaitingTurn
+    | typeof TTT_ACTOR_STATE.makingTurn
+    | typeof TTT_ACTOR_STATE.tryingToWin
+    | typeof TTT_ACTOR_STATE.tryingToBlockWin
+    | typeof TTT_ACTOR_STATE.tryingToFork
+    | typeof TTT_ACTOR_STATE.tryingToBlockFork
+    | typeof TTT_ACTOR_STATE.tryingToTakeCenter
+    | typeof TTT_ACTOR_STATE.tryingToTakeOppositeCorner
+    | typeof TTT_ACTOR_STATE.tryingToTakeCorner
+    | typeof TTT_ACTOR_STATE.tryingToTakeEmptySide
+    | typeof TTT_ACTOR_STATE.givingUp;
 };
 
-export const TicTacToeActorConditions = {
+export const TTT_ACTOR_GUARD = {
   verifyTurnReady: 'verifyTurnReady',
 } as const;
 
-export const TicTacToeActorActions = {
+export const TTT_ACTOR_ACTION = {
   saveField: 'saveField',
   makeTurn: 'makeTurn',
   tryWinning: 'tryWinning',

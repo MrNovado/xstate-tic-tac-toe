@@ -4,23 +4,23 @@ import sample from 'lodash.sample';
 
 import {
   TicTacToeActorEvents,
-  TicTacToeActorEventTypes as E,
-  TicTacToeEventTypes as Msg,
+  TTT_ACTOR_EVENT_TYPE as E,
+  TTT_EVENT_TYPE as Msg,
   TicTacToeEvents,
   FIELD_INITIAL,
   PlayerFieldSymbol,
-  TicTacToeEventTypes,
+  TTT_EVENT_TYPE,
   FIELD,
   FieldContext,
   PLAYER_NUM,
-  TIC_TAC_TOE_DELAY_OPTIONS,
+  TTT_DELAY_OPTIONS,
 } from './TicTacToe.common';
 import {
   TicTacToeActorContext,
   TicTacToeActorState,
-  TicTacToeActorActions as A,
-  TicTacToeActorConditions as C,
-  TicTacToeActorStateNodes as S,
+  TTT_ACTOR_ACTION as A,
+  TTT_ACTOR_GUARD as G,
+  TTT_ACTOR_STATE as S,
 } from './TicTacToe.actor.types';
 import { getOpponent, find2InARowWith1Free, findAFork } from './TicTacToe.actor.business';
 
@@ -28,7 +28,7 @@ const MSG_DELAY = 300;
 
 const MAKING_TURN_ACTION = {
   target: S.makingTurn,
-  cond: C.verifyTurnReady,
+  cond: G.verifyTurnReady,
   delay: ((ctx) => ctx.transitionDelay) as Expr<TicTacToeActorContext, TicTacToeActorEvents, number>,
 } as const;
 
@@ -50,13 +50,13 @@ export const createTicTacToeActor = (
         player: PLAYER_NUM.player2,
         symbol: givenSymbol,
         moveReady: null,
-        transitionDelay: TIC_TAC_TOE_DELAY_OPTIONS.default,
+        transitionDelay: TTT_DELAY_OPTIONS.default,
       },
       initial: S.awaitingTurn,
       states: {
         [S.awaitingTurn]: {
           on: {
-            [E.MAKE_TURN_REQ]: {
+            [E.makeTurnReq]: {
               target: S.tryingToWin,
               actions: [A.saveField],
             },
@@ -173,7 +173,7 @@ export const createTicTacToeActor = (
     },
     {
       guards: {
-        [C.verifyTurnReady]: ({ moveReady }: TicTacToeActorContext) => moveReady?.type === 'commit',
+        [G.verifyTurnReady]: ({ moveReady }: TicTacToeActorContext) => moveReady?.type === 'commit',
       },
       actions: {
         /**
@@ -192,20 +192,20 @@ export const createTicTacToeActor = (
             moveReady,
           }): Extract<
             TicTacToeEvents,
-            { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ | typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
+            { type: typeof TTT_EVENT_TYPE.acceptTurnReq | typeof TTT_EVENT_TYPE.giveUpReq }
           > => {
             if (moveReady?.type === 'commit') {
-              return { type: Msg.ACCEPT_TURN_REQ, index: moveReady.turnTo, sender: player };
+              return { type: Msg.acceptTurnReq, index: moveReady.turnTo, sender: player };
             }
 
-            return { type: Msg.GIVE_UP_TURN_REQ };
+            return { type: Msg.giveUpReq };
           },
           { delay: MSG_DELAY },
         ),
 
         [A.giveUp]: sendParent(
-          (): Extract<TicTacToeEvents, { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }> => {
-            return { type: Msg.GIVE_UP_TURN_REQ };
+          (): Extract<TicTacToeEvents, { type: typeof TTT_EVENT_TYPE.giveUpReq }> => {
+            return { type: Msg.giveUpReq };
           },
           { delay: MSG_DELAY },
         ),
@@ -238,8 +238,8 @@ export const createTicTacToeActor = (
         }),
         [A.tryTakingCenter]: assign({
           moveReady: ({ field }) => {
-            if (field[FIELD.CENTER] === null) {
-              return { type: 'commit', turnTo: FIELD.CENTER };
+            if (field[FIELD.center] === null) {
+              return { type: 'commit', turnTo: FIELD.center };
             }
 
             return { type: 'tryOtherMove' };
@@ -252,20 +252,20 @@ export const createTicTacToeActor = (
             // if the opposite corner is empty
             const corners = [
               {
-                is: field[FIELD.CORNERS.TOP_LEFT] === opponent && field[FIELD.CORNERS.BOT_RIGHT] === null,
-                index: FIELD.CORNERS.BOT_RIGHT,
+                is: field[FIELD.corners.topLeft] === opponent && field[FIELD.corners.botRight] === null,
+                index: FIELD.corners.botRight,
               },
               {
-                is: field[FIELD.CORNERS.TOP_RIGHT] === opponent && field[FIELD.CORNERS.BOT_LEFT] === null,
-                index: FIELD.CORNERS.BOT_LEFT,
+                is: field[FIELD.corners.topRight] === opponent && field[FIELD.corners.botLeft] === null,
+                index: FIELD.corners.botLeft,
               },
               {
-                is: field[FIELD.CORNERS.BOT_LEFT] === opponent && field[FIELD.CORNERS.TOP_RIGHT] === null,
-                index: FIELD.CORNERS.TOP_RIGHT,
+                is: field[FIELD.corners.botLeft] === opponent && field[FIELD.corners.topRight] === null,
+                index: FIELD.corners.topRight,
               },
               {
-                is: field[FIELD.CORNERS.BOT_RIGHT] === opponent && field[FIELD.CORNERS.TOP_LEFT] === null,
-                index: FIELD.CORNERS.TOP_LEFT,
+                is: field[FIELD.corners.botRight] === opponent && field[FIELD.corners.topLeft] === null,
+                index: FIELD.corners.topLeft,
               },
             ];
 
@@ -281,10 +281,10 @@ export const createTicTacToeActor = (
         [A.tryTakingCorner]: assign({
           moveReady: ({ field }) => {
             const corners = [
-              { value: field[FIELD.CORNERS.TOP_LEFT], index: FIELD.CORNERS.TOP_LEFT },
-              { value: field[FIELD.CORNERS.TOP_RIGHT], index: FIELD.CORNERS.TOP_RIGHT },
-              { value: field[FIELD.CORNERS.BOT_LEFT], index: FIELD.CORNERS.BOT_LEFT },
-              { value: field[FIELD.CORNERS.BOT_RIGHT], index: FIELD.CORNERS.BOT_RIGHT },
+              { value: field[FIELD.corners.topLeft], index: FIELD.corners.topLeft },
+              { value: field[FIELD.corners.topRight], index: FIELD.corners.topRight },
+              { value: field[FIELD.corners.botLeft], index: FIELD.corners.botLeft },
+              { value: field[FIELD.corners.botRight], index: FIELD.corners.botRight },
             ];
 
             const possibleFreeCorners = corners.filter((corner) => corner.value === null);
@@ -299,10 +299,10 @@ export const createTicTacToeActor = (
         [A.tryTakingSide]: assign({
           moveReady: ({ field }) => {
             const sides = [
-              { value: field[FIELD.EDGES.TOP], index: FIELD.EDGES.TOP },
-              { value: field[FIELD.EDGES.LEFT], index: FIELD.EDGES.LEFT },
-              { value: field[FIELD.EDGES.RIGHT], index: FIELD.EDGES.RIGHT },
-              { value: field[FIELD.EDGES.BOT], index: FIELD.EDGES.BOT },
+              { value: field[FIELD.edges.top], index: FIELD.edges.top },
+              { value: field[FIELD.edges.left], index: FIELD.edges.left },
+              { value: field[FIELD.edges.right], index: FIELD.edges.right },
+              { value: field[FIELD.edges.bot], index: FIELD.edges.bot },
             ];
 
             const possibleFreeSides = sides.filter((side) => side.value === null);

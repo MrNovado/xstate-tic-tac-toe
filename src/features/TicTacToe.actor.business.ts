@@ -15,7 +15,7 @@ export function getOpponent(symbol: PlayerFieldSymbol): PlayerFieldSymbol {
 
 export function find2InARowWith1Free(field: FieldContext, symbol: PlayerFieldSymbol): FieldCellIndex[] | undefined {
   const opponent = getOpponent(symbol);
-  const twoInARow = FIELD.COMBINATIONS.find((row) => {
+  const twoInARow = FIELD.combinations.find((row) => {
     const actorSymbolsInARow = row.reduce<number>((acc, index) => {
       if (field[index] === symbol) {
         return acc + 1;
@@ -117,8 +117,8 @@ export function findAFork(
   }
 
   // 2 diagonals can only intersect in the center
-  if (diagonals.length === 2 && field[FIELD.CENTER] === null) {
-    return { intersectionIndex: FIELD.CENTER };
+  if (diagonals.length === 2 && field[FIELD.center] === null) {
+    return { intersectionIndex: FIELD.center };
   }
 
   return null;

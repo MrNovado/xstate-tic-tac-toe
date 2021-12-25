@@ -6,12 +6,12 @@ import {
   FieldCellIndex,
   PLAYER_NUM,
   PLAYER_TYPE,
-  TicTacToeEventTypes as E,
+  TTT_EVENT_TYPE as E,
   TicTacToeTransitionDelay,
-  TIC_TAC_TOE_DELAY_OPTIONS,
+  TTT_DELAY_OPTIONS,
 } from '../features/TicTacToe.common';
 import { TicTacToeMachine } from '../features/TicTacToe.machine';
-import { TicTacToeStateNodes as S } from '../features/TicTacToe.machine.types';
+import { TTT_STATE as S } from '../features/TicTacToe.machine.types';
 
 inspect({ iframe: () => document.getElementById('stately-frame') as HTMLIFrameElement });
 
@@ -25,7 +25,7 @@ export const TicTacToePage: React.FC = () => {
       case machineState.matches(S.settingUp): {
         return (
           <div style={{ display: 'grid', gap: 8 }}>
-            <button style={{ minWidth: 150, height: 50 }} type="button" onClick={() => send({ type: E.CONTINUE_REQ })}>
+            <button style={{ minWidth: 150, height: 50 }} type="button" onClick={() => send({ type: E.continueReq })}>
               Player vs Player
             </button>
             <button
@@ -33,11 +33,11 @@ export const TicTacToePage: React.FC = () => {
               type="button"
               onClick={() => {
                 send({
-                  type: E.CHANGE_PLAYER_REQ,
+                  type: E.changePlayerReq,
                   kind: PLAYER_NUM.player2,
                   value: PLAYER_TYPE.agent,
                 });
-                send({ type: E.CONTINUE_REQ });
+                send({ type: E.continueReq });
               }}
             >
               Player vs AI
@@ -47,16 +47,16 @@ export const TicTacToePage: React.FC = () => {
               type="button"
               onClick={() => {
                 send({
-                  type: E.CHANGE_PLAYER_REQ,
+                  type: E.changePlayerReq,
                   kind: PLAYER_NUM.player1,
                   value: PLAYER_TYPE.agent,
                 });
                 send({
-                  type: E.CHANGE_PLAYER_REQ,
+                  type: E.changePlayerReq,
                   kind: PLAYER_NUM.player2,
                   value: PLAYER_TYPE.agent,
                 });
-                send({ type: E.CONTINUE_REQ });
+                send({ type: E.continueReq });
               }}
             >
               AI vs AI
@@ -65,12 +65,12 @@ export const TicTacToePage: React.FC = () => {
               delay (ms) transitions <br /> to see them in inspector frame:
             </span>
             <select
-              defaultValue={TIC_TAC_TOE_DELAY_OPTIONS.default}
+              defaultValue={TTT_DELAY_OPTIONS.default}
               onChange={(e) =>
-                send({ type: E.CHANGE_TRANSITION_DELAY_REQ, delay: Number(e.target.value) as TicTacToeTransitionDelay })
+                send({ type: E.changeTransitionDelayReq, delay: Number(e.target.value) as TicTacToeTransitionDelay })
               }
             >
-              {Object.values(TIC_TAC_TOE_DELAY_OPTIONS).map((delay) => (
+              {Object.values(TTT_DELAY_OPTIONS).map((delay) => (
                 <option value={delay}>{delay}</option>
               ))}
             </select>
@@ -89,7 +89,7 @@ export const TicTacToePage: React.FC = () => {
         const makeTurn = isPlayersTurn
           ? (index: FieldCellIndex) => () => {
               send({
-                type: E.ACCEPT_TURN_REQ,
+                type: E.acceptTurnReq,
                 index,
                 sender: currentPlayer,
               });
@@ -119,7 +119,7 @@ export const TicTacToePage: React.FC = () => {
                     justifyContent: 'center',
                     alignItems: 'center',
                     backgroundColor:
-                      ((isPlayersTurn && index === FIELD.CENTER) || (isPlayersTurn && !isFirstTurn)) && cell === null
+                      ((isPlayersTurn && index === FIELD.center) || (isPlayersTurn && !isFirstTurn)) && cell === null
                         ? '#cbffb6'
                         : '#ffffff',
                     transition: 'background .5s ease',
@@ -134,7 +134,7 @@ export const TicTacToePage: React.FC = () => {
               ))}
             </div>
             {isPlayersTurn ? (
-              <button type="button" onClick={() => send({ type: E.GIVE_UP_TURN_REQ })}>
+              <button type="button" onClick={() => send({ type: E.giveUpReq })}>
                 Give up
               </button>
             ) : (
@@ -177,10 +177,10 @@ export const TicTacToePage: React.FC = () => {
                 </div>
               ))}
             </div>
-            <button type="button" onClick={() => send({ type: E.RETRY_REQ })}>
+            <button type="button" onClick={() => send({ type: E.retryReq })}>
               Retry
             </button>
-            <button type="button" onClick={() => send({ type: E.SET_UP_NEW_GAME })}>
+            <button type="button" onClick={() => send({ type: E.setUpNewGame })}>
               New game
             </button>
             {machineState.context.winCombo && <div>{`Win combination ${machineState.context.winCombo}`}</div>}

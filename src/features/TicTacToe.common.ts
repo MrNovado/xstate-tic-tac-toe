@@ -60,49 +60,49 @@ export const DIAGONALS: FieldCellIndex[][] = [
 ];
 
 export const FIELD = {
-  CORNERS: {
-    TOP_LEFT: 0 as FieldCellIndex,
-    TOP_RIGHT: 2 as FieldCellIndex,
-    BOT_LEFT: 6 as FieldCellIndex,
-    BOT_RIGHT: 8 as FieldCellIndex,
+  corners: {
+    topLeft: 0 as FieldCellIndex,
+    topRight: 2 as FieldCellIndex,
+    botLeft: 6 as FieldCellIndex,
+    botRight: 8 as FieldCellIndex,
   },
-  EDGES: {
-    TOP: 1 as FieldCellIndex,
-    LEFT: 3 as FieldCellIndex,
-    RIGHT: 5 as FieldCellIndex,
-    BOT: 7 as FieldCellIndex,
+  edges: {
+    top: 1 as FieldCellIndex,
+    left: 3 as FieldCellIndex,
+    right: 5 as FieldCellIndex,
+    bot: 7 as FieldCellIndex,
   },
-  CENTER: 4 as FieldCellIndex,
-  COMBINATIONS: [...ROWS, ...COLUMNS, ...DIAGONALS],
-  ROWS,
-  COLUMNS,
-  DIAGONALS,
+  center: 4 as FieldCellIndex,
+  combinations: [...ROWS, ...COLUMNS, ...DIAGONALS],
+  rows: ROWS,
+  columns: COLUMNS,
+  diagonals: DIAGONALS,
 };
 
 export const FIELD_INITIAL: FieldContext = [null, null, null, null, null, null, null, null, null];
 
-export const TicTacToeEventTypes = {
-  CHANGE_PLAYER_REQ: 'CHANGE_PLAYER_REQ',
-  CONTINUE_REQ: 'CONTINUE_REQ',
-  CHANGE_TURN_ORDER_REQ: 'CHANGE_TURN_ORDER_REQ',
-  CHANGE_TRANSITION_DELAY_REQ: 'CHANGE_TRANSITION_DELAY_REQ',
-  ACCEPT_TURN_REQ: 'ACCEPT_TURN_REQ',
-  GIVE_UP_TURN_REQ: 'GIVE_UP_TURN_REQ',
-  RETRY_REQ: 'RETRY_REQ',
-  SET_UP_NEW_GAME: 'SET_UP_NEW_GAME',
+export const TTT_EVENT_TYPE = {
+  changePlayerReq: 'changePlayerReq',
+  continueReq: 'continueReq',
+  changeTurnOrderReq: 'changeTurnOrderReq',
+  changeTransitionDelayReq: 'changeTransitionDelayReq',
+  acceptTurnReq: 'acceptTurnReq',
+  giveUpReq: 'giveUpReq',
+  retryReq: 'retryReq',
+  setUpNewGame: 'setUpNewGame',
 } as const;
 
 export type TicTacToeEvents =
-  | { type: typeof TicTacToeEventTypes.CHANGE_PLAYER_REQ; kind: PlayerTurnContext; value: PlayerContext['type'] }
-  | { type: typeof TicTacToeEventTypes.CONTINUE_REQ }
-  | { type: typeof TicTacToeEventTypes.CHANGE_TURN_ORDER_REQ; first: PlayerTurnContext }
-  | { type: typeof TicTacToeEventTypes.CHANGE_TRANSITION_DELAY_REQ; delay: TicTacToeTransitionDelay }
-  | { type: typeof TicTacToeEventTypes.ACCEPT_TURN_REQ; index: FieldCellIndex; sender: PlayerTurnContext }
-  | { type: typeof TicTacToeEventTypes.GIVE_UP_TURN_REQ }
-  | { type: typeof TicTacToeEventTypes.RETRY_REQ }
-  | { type: typeof TicTacToeEventTypes.SET_UP_NEW_GAME };
+  | { type: typeof TTT_EVENT_TYPE.changePlayerReq; kind: PlayerTurnContext; value: PlayerContext['type'] }
+  | { type: typeof TTT_EVENT_TYPE.continueReq }
+  | { type: typeof TTT_EVENT_TYPE.changeTurnOrderReq; first: PlayerTurnContext }
+  | { type: typeof TTT_EVENT_TYPE.changeTransitionDelayReq; delay: TicTacToeTransitionDelay }
+  | { type: typeof TTT_EVENT_TYPE.acceptTurnReq; index: FieldCellIndex; sender: PlayerTurnContext }
+  | { type: typeof TTT_EVENT_TYPE.giveUpReq }
+  | { type: typeof TTT_EVENT_TYPE.retryReq }
+  | { type: typeof TTT_EVENT_TYPE.setUpNewGame };
 
-export const TIC_TAC_TOE_DELAY_OPTIONS = {
+export const TTT_DELAY_OPTIONS = {
   0: 0,
   default: 300,
   500: 500,
@@ -110,7 +110,7 @@ export const TIC_TAC_TOE_DELAY_OPTIONS = {
   1000: 1000,
 } as const;
 
-export type TicTacToeTransitionDelay = typeof TIC_TAC_TOE_DELAY_OPTIONS[keyof typeof TIC_TAC_TOE_DELAY_OPTIONS];
+export type TicTacToeTransitionDelay = typeof TTT_DELAY_OPTIONS[keyof typeof TTT_DELAY_OPTIONS];
 
 export type TicTacToeContext = {
   actorTransitionDelay: TicTacToeTransitionDelay;
@@ -131,13 +131,13 @@ export type TicTacToeContext = {
   surrendered: PlayerTurnContext | null;
 };
 
-export const TicTacToeActorEventTypes = {
-  MAKE_TURN_REQ: 'MAKE_TURN_REQ',
+export const TTT_ACTOR_EVENT_TYPE = {
+  makeTurnReq: 'makeTurnReq',
 } as const;
 
 // Machine to Actor -- Msg
 export type TicTacToeActorEvents = {
-  type: typeof TicTacToeActorEventTypes.MAKE_TURN_REQ;
+  type: typeof TTT_ACTOR_EVENT_TYPE.makeTurnReq;
   field: FieldContext;
   player: PlayerTurnContext;
   transitionDelay: TicTacToeTransitionDelay;

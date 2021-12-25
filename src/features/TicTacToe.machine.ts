@@ -2,29 +2,24 @@ import { createMachine, assign, spawn } from 'xstate';
 
 import { createTicTacToeActor } from './TicTacToe.actor';
 import {
-  TicTacToeActorEventTypes as Msg,
+  TTT_ACTOR_EVENT_TYPE as Msg,
   PLAYER_TYPE,
   PlayerContext,
   FieldContext,
   FIELD_INITIAL,
   PLAYER_SYMBOL,
   TicTacToeEvents,
-  TicTacToeEventTypes as E,
+  TTT_EVENT_TYPE as E,
   PLAYER_NUM,
   TicTacToeContext,
   FIELD,
-  TIC_TAC_TOE_DELAY_OPTIONS,
+  TTT_DELAY_OPTIONS,
 } from './TicTacToe.common';
 
-import {
-  TicTacToeState,
-  TicTacToeStateNodes as S,
-  TicTacToeMachineActions as A,
-  TicTacToeMachineConditions as C,
-} from './TicTacToe.machine.types';
+import { TicTacToeState, TTT_STATE as S, TTT_ACTION as A, TTT_GUARD as G } from './TicTacToe.machine.types';
 
 const initialContext: TicTacToeContext = {
-  actorTransitionDelay: TIC_TAC_TOE_DELAY_OPTIONS.default,
+  actorTransitionDelay: TTT_DELAY_OPTIONS.default,
   opponents: {
     [PLAYER_NUM.player1]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.x },
     [PLAYER_NUM.player2]: { type: PLAYER_TYPE.user, symbol: PLAYER_SYMBOL.o },
@@ -51,10 +46,10 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [S.settingUp]: {
         on: {
-          [E.CHANGE_PLAYER_REQ]: { actions: [A.setPlayer] },
-          [E.CHANGE_TURN_ORDER_REQ]: { actions: [A.setTurnOrder] },
-          [E.CHANGE_TRANSITION_DELAY_REQ]: { actions: [A.setTransitionDelay] },
-          [E.CONTINUE_REQ]: {
+          [E.changePlayerReq]: { actions: [A.setPlayer] },
+          [E.changeTurnOrderReq]: { actions: [A.setTurnOrder] },
+          [E.changeTransitionDelayReq]: { actions: [A.setTransitionDelay] },
+          [E.continueReq]: {
             target: S.playing,
           },
         },
@@ -72,17 +67,17 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
           [S.playingTakingTurn]: {
             entry: A.awaitTurn,
             on: {
-              [E.ACCEPT_TURN_REQ]: [
+              [E.acceptTurnReq]: [
                 {
                   target: S.playingCheckingGameState,
                   actions: [A.saveTurn, A.switchTurn],
-                  cond: C.verifyTurn,
+                  cond: G.verifyTurn,
                 },
                 {
                   target: S.playingCheckingGameState,
                 },
               ],
-              [E.GIVE_UP_TURN_REQ]: {
+              [E.giveUpReq]: {
                 target: `#${S.showingGameEndResults}`,
                 actions: [A.saveSurrender],
               },
@@ -97,7 +92,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
             always: [
               {
                 target: `#${S.showingGameEndResults}`,
-                cond: C.verifyGameEnd,
+                cond: G.verifyGameEnd,
               },
               {
                 target: S.playingTakingTurn,
@@ -113,11 +108,11 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
       [S.showingGameEndResults]: {
         id: S.showingGameEndResults,
         on: {
-          [E.RETRY_REQ]: {
+          [E.retryReq]: {
             target: S.playing,
             actions: [A.revertContextButOpponents],
           },
-          [E.SET_UP_NEW_GAME]: {
+          [E.setUpNewGame]: {
             target: S.settingUp,
             actions: [A.revertContextToInitial],
           },
@@ -127,13 +122,13 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
   },
   {
     guards: {
-      [C.verifyTurn]: ({ field }, event) => {
-        if (event.type === E.ACCEPT_TURN_REQ) {
+      [G.verifyTurn]: ({ field }, event) => {
+        if (event.type === E.acceptTurnReq) {
           return field[event.index] === null;
         }
         return false;
       },
-      [C.verifyGameEnd]: ({ winCombo, surrendered, turnOrder }) => {
+      [G.verifyGameEnd]: ({ winCombo, surrendered, turnOrder }) => {
         return Boolean(winCombo || surrendered) || turnOrder.turnsMade === 9;
       },
     },
@@ -153,7 +148,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [A.setPlayer]: assign({
         opponents: (ctx, event) => {
-          if (event.type === E.CHANGE_PLAYER_REQ) {
+          if (event.type === E.changePlayerReq) {
             // stop old agent if exists
             const currentPlayerInfo: PlayerContext = ctx.opponents[event.kind];
             if (currentPlayerInfo.type === PLAYER_TYPE.agent) {
@@ -198,7 +193,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [A.setTurnOrder]: assign({
         turnOrder: (ctx, event) => {
-          if (event.type === E.CHANGE_TURN_ORDER_REQ) {
+          if (event.type === E.changeTurnOrderReq) {
             return {
               ...ctx.turnOrder,
               current: event.first,
@@ -214,7 +209,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [A.setTransitionDelay]: assign({
         actorTransitionDelay: (ctx, event) => {
-          if (event.type === E.CHANGE_TRANSITION_DELAY_REQ) {
+          if (event.type === E.changeTransitionDelayReq) {
             return event.delay;
           }
 
@@ -229,7 +224,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
         const player = ctx.opponents[ctx.turnOrder.current];
         if (player.type === PLAYER_TYPE.agent) {
           player.ref.send({
-            type: Msg.MAKE_TURN_REQ,
+            type: Msg.makeTurnReq,
             field: ctx.field,
             player: ctx.turnOrder.current,
             transitionDelay: ctx.actorTransitionDelay,
@@ -244,7 +239,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
        */
       [A.saveTurn]: assign({
         field: (ctx, event) => {
-          if (event.type === E.ACCEPT_TURN_REQ) {
+          if (event.type === E.acceptTurnReq) {
             const newField: FieldContext = [...ctx.field];
             const newSymbol = ctx.opponents[event.sender].symbol;
             newField[event.index] = newSymbol;
@@ -266,7 +261,7 @@ export const TicTacToeMachine = createMachine<TicTacToeContext, TicTacToeEvents,
 
       [A.tryGameEnd]: assign({
         winCombo: ({ field, winCombo }) => {
-          const someCombo = FIELD.COMBINATIONS.find((combination) => {
+          const someCombo = FIELD.combinations.find((combination) => {
             const [a, b, c] = combination;
             if (field[a] && field[a] === field[b] && field[a] === field[c]) {
               return true;
