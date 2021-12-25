@@ -70,9 +70,13 @@ export const TicTacToePage: React.FC = () => {
                 send({ type: E.changeTransitionDelayReq, delay: Number(e.target.value) as TicTacToeTransitionDelay })
               }
             >
-              {Object.values(TTT_DELAY_OPTIONS).map((delay) => (
-                <option value={delay}>{delay}</option>
-              ))}
+              {Object.values(TTT_DELAY_OPTIONS)
+                .sort((a, b) => (a > b ? 1 : -1))
+                .map((delay) => (
+                  <option key={delay} value={delay}>
+                    {delay}
+                  </option>
+                ))}
             </select>
             <span>
               switch from machine(x:n) <br /> to a player in inspector frame <br /> when game starts
@@ -208,7 +212,6 @@ export const TicTacToePage: React.FC = () => {
   return (
     <div
       style={{
-        width: '50%',
         margin: '10% auto auto auto',
         display: 'flex',
         flexDirection: 'column',
