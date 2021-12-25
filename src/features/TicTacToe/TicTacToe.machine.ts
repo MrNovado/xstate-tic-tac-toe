@@ -1,4 +1,4 @@
-import { createMachine, assign, spawn } from 'xstate';
+import { createMachine, assign, spawn, Interpreter, State } from 'xstate';
 
 import { createTicTacToeActor } from './TicTacToe.actor';
 import {
@@ -32,6 +32,10 @@ const initialContext: TicTacToeContext = {
   winCombo: null,
   surrendered: null,
 };
+
+export type TicTacToeMachineSend = Interpreter<TicTacToeContext, never, TicTacToeEvents, TicTacToeState>['send'];
+
+export type TicTacToeMachineState = State<TicTacToeContext, TicTacToeEvents, never, TicTacToeState>;
 
 /**
  * This machine defines major states of the game

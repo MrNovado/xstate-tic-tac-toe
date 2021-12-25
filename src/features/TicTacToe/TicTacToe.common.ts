@@ -26,7 +26,7 @@ export const PLAYER_SYMBOL = {
 
 export type PlayerFieldSymbol = typeof PLAYER_SYMBOL[keyof typeof PLAYER_SYMBOL];
 
-type FieldCellValue = PlayerFieldSymbol | null;
+export type FieldCellValue = PlayerFieldSymbol | null;
 export type FieldCellIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 // strictly 9 cells
