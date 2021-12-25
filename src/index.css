@@ -16,3 +16,8 @@ body {
 body > * {
   flex: 1;
 }
+
+body > #root {
+  width: 400px;
+  flex: none;
+}
