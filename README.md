@@ -15,6 +15,12 @@ To install and run:
 - `yarn`
 - `yarn start`
 
+NOTE: don't forget you can always switch machines in the inspector frame:
+
+<p align="center">
+  <img src="./doc/demo.gif">
+</p>
+
 # Machine
 
 Machine is organized to operate in 3 simple phases:
@@ -22,7 +28,9 @@ Machine is organized to operate in 3 simple phases:
 - playing and taking turns
 - showing results
 
-![TicTacToe machine state-chart](./doc/TicTacToeMachineSChart.png)
+<p align="center">
+  <img src="./doc/TicTacToeMachineSChart.png">
+</p>
 
 # Actor
 Actor is using Newell and Simon's expert model with rule ordering.
@@ -36,4 +44,6 @@ Basically, actor follows a predetermined path to win.
 
 The implementation, however, is using random `sampling` when it comes to selecting a move between other equally valid ones (i.e. when trying to take a free corner/side, when several are available).  
 
-![TicTacToe machine state-chart](./doc/TicTacToeActorSChart.png)
+<p align="center">
+  <img src="./doc/TicTacToeActorSChart.png">
+</p>
